@@ -116,7 +116,7 @@
         .header-btn:hover, .header-btn.active { color: var(--primary); transform: rotate(90deg); }
 
         /* --- 1. 头部组件 --- */
-        .header { grid-area: header; display: flex; justify-content: space-between; align-items: center; padding: 30px 40px; }
+        .header { grid-area: header; display: flex; justify-content: space-between; align-items: center; padding: 30px 40px; position: relative; }
         .clock-box h1 {
             font-size: 64px;
             font-weight: 700;
@@ -129,9 +129,117 @@
         }
         .clock-box p { color: var(--text-sec); font-size: 16px; margin-top: 5px; letter-spacing: 1px; }
         
-        .weather-box { text-align: right; display: flex; align-items: center; gap: 15px; }
-        .weather-temp { font-size: 36px; font-weight: bold; }
-        .weather-desc { font-size: 14px; color: var(--text-sec); }
+        /* --- 搜索模块 --- */
+        .search-box-wrapper {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
+        
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            height: 50px;
+            width: 50px; /* 收起状态 */
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .search-container.active {
+            width: 420px; /* 展开状态 */
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 242, 234, 0.2);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .search-trigger {
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: 0.3s;
+        }
+        .search-container.active .search-trigger {
+            color: #fff;
+            transform: rotate(90deg);
+        }
+
+        .search-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            padding-right: 8px;
+            transition: opacity 0.3s ease 0.1s;
+        }
+
+        .search-container.active .search-content {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .search-select {
+            background: transparent;
+            border: none;
+            color: var(--text-sec);
+            font-size: 13px;
+            margin-right: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            padding: 5px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .search-select:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .search-select option { background: #1a1a2e; color: #fff; }
+
+        .search-divider {
+            width: 1px; height: 20px; background: rgba(255,255,255,0.15); margin: 0 8px;
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+        }
+        .search-input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .search-go {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+            margin-left: 5px;
+        }
+        .search-go:hover { transform: scale(1.1); box-shadow: 0 0 10px var(--primary); background: #fff; }
 
         /* --- 优化后的天气模块 --- */
         .weather-wrapper {
@@ -612,6 +720,28 @@
                 <h1 id="clock">00:00</h1>
                 <p id="date">LOADING...</p>
             </div>
+            
+            <!-- 搜索模块 -->
+            <div class="search-box-wrapper">
+                <div class="search-container" id="searchContainer">
+                    <button class="search-trigger" onclick="toggleSearch()" title="搜索">
+                        <i class="ph-bold ph-magnifying-glass"></i>
+                    </button>
+                    <div class="search-content">
+                        <select id="searchEngine" class="search-select">
+                            <option value="bing">Bing</option>
+                            <option value="google">Google</option>
+                            <option value="scholar">学术</option>
+                        </select>
+                        <div class="search-divider"></div>
+                        <input type="text" id="searchInput" class="search-input" placeholder="输入关键词搜索..." onkeypress="handleSearchEnter(event)">
+                        <button class="search-go" onclick="doSearch()">
+                            <i class="ph-bold ph-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="weather-wrapper">
                 <!-- 天气显示区域 -->
                 <div class="weather-box" onclick="openLocModal()">
@@ -810,6 +940,41 @@
     </div>
 
 <script>
+    // --- 搜索模块逻辑 ---
+    function toggleSearch() {
+        const container = document.getElementById('searchContainer');
+        const input = document.getElementById('searchInput');
+        container.classList.toggle('active');
+        if (container.classList.contains('active')) {
+            setTimeout(() => input.focus(), 400); // Wait for transition
+        }
+    }
+
+    function doSearch() {
+        const engine = document.getElementById('searchEngine').value;
+        const query = document.getElementById('searchInput').value.trim();
+        if (!query) return;
+
+        let url = '';
+        switch (engine) {
+            case 'bing':
+                url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+                break;
+            case 'google':
+                url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                break;
+            case 'scholar':
+                url = `https://scholar.google.com/scholar?q=${encodeURIComponent(query)}`;
+                break;
+        }
+        window.open(url, '_blank');
+    }
+
+    function handleSearchEnter(e) {
+        if (e.key === 'Enter') doSearch();
+    }
+
+
     // --- 0. 快速访问逻辑 (新增功能) ---
     const defaultShortcuts = [
         { title: "🔍 百度", url: "https://www.baidu.com" },
