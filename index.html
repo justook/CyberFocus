@@ -610,8 +610,18 @@
             background: rgba(255,255,255,0.02); margin-bottom: 10px; padding: 15px;
             border-radius: 10px; transition: 0.2s; border-left: 3px solid transparent;
             display: flex; flex-direction: column;
+            cursor: move; /* 拖拽手势 */
+            user-select: none; /* 防止文字选择 */
         }
         .todo-item:hover { background: rgba(255,255,255,0.05); border-left-color: var(--primary); }
+        .todo-item.dragging {
+            opacity: 0.5;
+            background: rgba(0, 242, 234, 0.1);
+            border: 2px dashed var(--primary);
+        }
+        /* 拖拽时，子元素的指针事件需要保留以便交互，但不要干扰拖拽起始 */
+        .todo-item * { pointer-events: none; }
+        .todo-item input, .todo-item button, .todo-item .action-btn { pointer-events: auto; }
         
         .item-main { display: flex; align-items: center; width: 100%; position: relative;}
 
@@ -701,7 +711,7 @@
             font-size: 14px; font-weight: bold; margin-top: 10px;
         }
 
-        /* 微博热搜 */
+        /* 微博热搜 (通用化为热点资讯) */
         .trend-list { list-style: none; }
         .trend-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -714,6 +724,35 @@
         .trend-link { color: var(--text-main); text-decoration: none; font-size: 14px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .trend-link:hover { color: var(--primary); }
         .trend-score { font-size: 12px; color: var(--text-sec); }
+
+        /* 热榜 Tabs 样式 */
+        .trend-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .trend-tabs::-webkit-scrollbar { height: 3px; }
+        .trend-tabs::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+        .trend-tab-btn {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-sec);
+            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .trend-tab-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        .trend-tab-btn.active {
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+        }
 
 
         /* --- 设置浮动按钮 --- */
@@ -741,6 +780,77 @@
             transform: rotate(90deg) scale(1.1);
             background: var(--primary);
             color: #000;
+        }
+
+        /* --- 每日新闻摘要浮动按钮 (New) --- */
+        .news-fab {
+            position: fixed;
+            bottom: 90px; /* 位于设置按钮上方 */
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            z-index: 999;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .news-fab:hover {
+            transform: scale(1.1);
+            background: var(--primary);
+            color: #000;
+        }
+        .news-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.4);
+            display: none; /* JS toggles this */
+            animation: pulseRed 2s infinite;
+        }
+        .news-badge.show { display: block; }
+
+        /* --- 新闻摘要模态框样式 --- */
+        #newsSummaryModal .modal-content {
+            padding: 20px;
+            max-width: 600px;
+            width: 95%;
+            height: 80vh; /* 固定高度允许内部滚动 */
+            display: flex;
+            flex-direction: column;
+        }
+        .news-image-container {
+            flex: 1;
+            overflow-y: auto;
+            border-radius: 10px;
+            margin-top: 10px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 200px;
+        }
+        .news-image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        .loading-text {
+            color: var(--text-sec);
+            margin-top: 50px;
+            text-align: center;
         }
 
         /* --- 设置模态框 (增强版) --- */
@@ -826,6 +936,20 @@
         }
         .close-config-btn:hover { color: #fff; }
 
+        /* 热榜源选择样式 */
+        .source-group { margin-bottom: 20px; }
+        .source-group-title { font-size: 13px; color: var(--primary); margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .source-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .source-item {
+            display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-sec); cursor: pointer;
+            padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        .source-item:hover { background: rgba(255,255,255,0.1); }
+        .source-item.selected { border-color: var(--primary); color: #fff; background: rgba(0,242,234,0.05); }
+        .source-item input { display: none; }
+        .source-limit-tip { font-size: 12px; color: var(--warning); margin-bottom: 15px; }
+
         /* 隐藏模块通用类 */
         .module-hidden { display: none !important; }
 
@@ -836,6 +960,12 @@
     <!-- 背景装饰 -->
     <div class="bg-blob blob-1"></div>
     <div class="bg-blob blob-2"></div>
+
+    <!-- 新闻摘要入口按钮 -->
+    <button class="news-fab" onclick="openNewsModal()" title="每日新闻摘要">
+        <i class="ph-bold ph-newspaper-clipping"></i>
+        <div id="newsBadge" class="news-badge"></div>
+    </button>
 
     <!-- 设置入口按钮 -->
     <button class="settings-fab" onclick="openConfigModal()" title="全局设置">
@@ -1034,7 +1164,7 @@
                     </div>
                 </div>
 
-                <ul class="todo-list" id="todoList">
+                <ul class="todo-list" id="todoList" ondragover="handleDragOver(event)">
                     <!-- JS 生成 -->
                 </ul>
             </div>
@@ -1052,7 +1182,10 @@
             </div>
 
             <div class="card" id="weiboCard">
-                <h3><span class="title-text">🔥 微博热搜</span></h3>
+                <h3><span class="title-text">🔥 实时热榜</span></h3>
+                <div class="trend-tabs" id="trendTabs">
+                    <!-- JS 生成 -->
+                </div>
                 <ul class="trend-list" id="newsList">
                     <!-- JS 生成 -->
                 </ul>
@@ -1060,7 +1193,7 @@
             </div>
 
             <div class="card" id="newsCard">
-                <h3><span class="title-text">📰 热点资讯</span></h3>
+                <h3><span class="title-text">📰 推荐阅读</span></h3>
                 <ul class="trend-list">
                     <li class="trend-item"><a href="#" class="trend-link">科技：GPT-5 即将发布预览</a></li>
                     <li class="trend-item"><a href="#" class="trend-link">财经：全球股市最新动态</a></li>
@@ -1084,8 +1217,8 @@
                 <div class="config-tab" onclick="switchConfigTab('task')"><i class="ph-bold ph-list-checks"></i> 任务计划</div>
                 <div class="config-tab" onclick="switchConfigTab('music')"><i class="ph-bold ph-music-note"></i> 音乐模块</div>
                 <div class="config-tab" onclick="switchConfigTab('pomo')"><i class="ph-bold ph-hourglass"></i> 番茄时钟</div>
-                <div class="config-tab" onclick="switchConfigTab('weibo')"><i class="ph-bold ph-fire"></i> 微博热搜</div>
-                <div class="config-tab" onclick="switchConfigTab('news')"><i class="ph-bold ph-newspaper"></i> 热点资讯</div>
+                <div class="config-tab" onclick="switchConfigTab('weibo')"><i class="ph-bold ph-fire"></i> 热榜源设置</div>
+                <div class="config-tab" onclick="switchConfigTab('news')"><i class="ph-bold ph-newspaper"></i> 推荐阅读</div>
                 <div class="config-tab" onclick="switchConfigTab('about')"><i class="ph-bold ph-info"></i> 关于</div>
             </div>
             
@@ -1158,6 +1291,11 @@
                         <span class="toggle-label">显示模块</span>
                         <label class="switch"><input type="checkbox" id="chk-todoCard" onchange="toggleModule('todoCard')"><span class="slider"></span></label>
                     </div>
+                    <!-- Added -->
+                    <div class="toggle-row">
+                        <span class="toggle-label">已完成任务沉底</span>
+                        <label class="switch"><input type="checkbox" id="chk-autoMoveDone" onchange="toggleAutoMoveDone()"><span class="slider"></span></label>
+                    </div>
                 </div>
 
                 <!-- 音乐 -->
@@ -1178,18 +1316,25 @@
                     </div>
                 </div>
 
-                <!-- 微博热搜 -->
+                <!-- 微博热搜 (改为热榜设置) -->
                 <div id="cfg-weibo" class="config-section">
-                    <div class="config-header">微博热搜模块</div>
+                    <div class="config-header">热榜源设置</div>
                     <div class="toggle-row">
                         <span class="toggle-label">显示模块</span>
                         <label class="switch"><input type="checkbox" id="chk-weiboCard" onchange="toggleModule('weiboCard')"><span class="slider"></span></label>
+                    </div>
+                    
+                    <div style="margin-top:20px;">
+                        <p class="source-limit-tip"><i class="ph-bold ph-info"></i> 最多选择 5 个数据源，主页将提供快速切换选项。</p>
+                        <div id="trendSourceConfig">
+                            <!-- JS 动态生成 -->
+                        </div>
                     </div>
                 </div>
 
                 <!-- 热点资讯 -->
                 <div id="cfg-news" class="config-section">
-                    <div class="config-header">热点资讯模块</div>
+                    <div class="config-header">推荐阅读模块</div>
                     <div class="toggle-row">
                         <span class="toggle-label">显示模块</span>
                         <label class="switch"><input type="checkbox" id="chk-newsCard" onchange="toggleModule('newsCard')"><span class="slider"></span></label>
@@ -1209,6 +1354,19 @@
         </div>
     </div>
 
+    <!-- 新闻摘要模态框 -->
+    <div id="newsSummaryModal" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>📅 今日新闻简报</h3>
+                <button class="header-btn" onclick="closeNewsModal()" style="font-size:24px;">×</button>
+            </div>
+            <div class="news-image-container" id="newsImgContainer">
+                <div class="loading-text">正在获取今日简报...<br>API响应较慢，请稍候</div>
+            </div>
+        </div>
+    </div>
+
 <script>
     // --- 0. 全局配置逻辑 (NEW) ---
     // 默认配置
@@ -1217,7 +1375,9 @@
         bgUrl: '',
         showDate: true,
         showLunar: false,
+        autoMoveDone: false, // New property
         amapKey: 'c0a1a7a74be675ec71f73f3be7463166', // 默认Key
+        trendSources: ['weibo'], // 默认只有微博
         modules: {
             clockCard: true,
             searchCard: true,
@@ -1235,7 +1395,12 @@
     let appConfig = JSON.parse(localStorage.getItem('cyberAppConfig')) || defaultConfig;
     
     // 合并可能缺少的新字段（防止更新后报错）
-    appConfig = { ...defaultConfig, ...appConfig, modules: { ...defaultConfig.modules, ...appConfig.modules } };
+    appConfig = { 
+        ...defaultConfig, 
+        ...appConfig, 
+        modules: { ...defaultConfig.modules, ...appConfig.modules },
+        trendSources: appConfig.trendSources || defaultConfig.trendSources // 兼容旧数据
+    };
 
     function saveConfig() {
         localStorage.setItem('cyberAppConfig', JSON.stringify(appConfig));
@@ -1267,6 +1432,9 @@
 
         // 4. 更新 Input 状态 (用于设置面板回显)
         updateConfigInputs();
+
+        // 5. 更新热榜 Tabs
+        renderTrendTabs();
     }
 
     function updateConfigInputs() {
@@ -1284,7 +1452,11 @@
         // 其它
         document.getElementById('chk-date').checked = appConfig.showDate;
         document.getElementById('chk-lunar').checked = appConfig.showLunar;
+        document.getElementById('chk-autoMoveDone').checked = appConfig.autoMoveDone; // New line
         document.getElementById('cfgAmapKey').value = appConfig.amapKey;
+        
+        // 热榜源
+        renderTrendSettings();
     }
 
     // --- 设置面板交互逻辑 ---
@@ -1294,6 +1466,7 @@
     }
     function closeConfigModal() {
         document.getElementById('configModal').classList.remove('show');
+        renderTrendTabs(); // 关闭时刷新热榜 Tabs
     }
 
     function switchConfigTab(tabName) {
@@ -1335,6 +1508,12 @@
         appConfig.showLunar = document.getElementById('chk-lunar').checked;
         saveConfig();
         applyAppConfig(); // 触发 UI 更新
+    }
+
+    function toggleAutoMoveDone() {
+        appConfig.autoMoveDone = document.getElementById('chk-autoMoveDone').checked;
+        saveConfig();
+        renderList();
     }
 
     function toggleDateDisplayUI() {
@@ -1555,7 +1734,8 @@
 
     // --- 2. 待办事项逻辑 (增强版：层级 + 进度 + Deadline + 一键拆解) ---
     let currentTab = 'todo';
-    
+    let draggedItem = null; // 拖拽全局变量
+
     // 数据结构：Item: { id, text, type: 'todo'|'day'|'week', done: bool, deadline: string, parentId: string|null, contribution: number|null, legacyProgress: number|0 }
     let allTasks = JSON.parse(localStorage.getItem('cyberTasks')) || [];
     if (!Array.isArray(allTasks)) allTasks = [];
@@ -1734,17 +1914,74 @@
         }
     }
 
+    // --- 拖拽逻辑函数 Start ---
+    window.handleDragStart = function(e) {
+        draggedItem = e.target;
+        // 延迟添加样式，使得被拖拽的"幽灵"副本是原样，而页面上的元素变淡
+        setTimeout(() => e.target.classList.add('dragging'), 0);
+    };
+
+    window.handleDragEnd = function(e) {
+        e.target.classList.remove('dragging');
+        draggedItem = null;
+        saveNewOrder(); // 拖拽结束，保存新顺序
+    };
+
+    window.handleDragOver = function(e) {
+        e.preventDefault();
+        const list = document.getElementById('todoList');
+        const draggingItem = document.querySelector('.dragging');
+        if (!draggingItem) return;
+
+        // 获取所有未被拖拽的兄弟元素
+        const siblings = [...list.querySelectorAll('.todo-item:not(.dragging)')];
+        
+        // 找到光标下方的那个元素
+        const nextSibling = siblings.find(sibling => {
+            return e.clientY <= sibling.getBoundingClientRect().top + sibling.offsetHeight / 2;
+        });
+        
+        // 将正在拖拽的元素插入到该元素之前
+        list.insertBefore(draggingItem, nextSibling);
+    };
+
+    function saveNewOrder() {
+        const list = document.getElementById('todoList');
+        const newOrderIds = [...list.querySelectorAll('.todo-item')].map(li => li.dataset.id);
+        
+        // 1. 将当前 tab 的任务提取出来
+        // 2. 将非当前 tab 的任务提取出来
+        const otherTasks = allTasks.filter(t => t.type !== currentTab);
+        
+        // 3. 根据 DOM 的顺序重组当前 tab 的任务数组
+        const sortedCurrentTasks = [];
+        newOrderIds.forEach(id => {
+            const task = allTasks.find(t => t.id === id);
+            if(task) sortedCurrentTasks.push(task);
+        });
+
+        // 4. 合并保存 (将当前显示的排在前面，或者简单合并即可，只要保证相对顺序)
+        allTasks = [...sortedCurrentTasks, ...otherTasks];
+        saveData();
+    }
+    // --- 拖拽逻辑函数 End ---
+
     function renderList() {
         const listEl = document.getElementById('todoList');
         listEl.innerHTML = '';
         
-        const tasksToShow = allTasks.filter(t => t.type === currentTab);
+        let tasksToShow = allTasks.filter(t => t.type === currentTab);
         
-        tasksToShow.sort((a, b) => {
-            if (!a.deadline) return 1;
-            if (!b.deadline) return -1;
-            return new Date(a.deadline) - new Date(b.deadline);
-        });
+        // 移除自动排序，尊重 allTasks 中的顺序（即用户拖拽后的顺序）
+        // tasksToShow.sort(...) <--- Removed
+
+        // 如果开启了“已完成任务沉底”
+        if (appConfig.autoMoveDone) {
+            tasksToShow.sort((a, b) => {
+                if (a.done === b.done) return 0; // 状态相同则保持原顺序
+                return a.done ? 1 : -1; // 已完成的排在后面
+            });
+        }
 
         if (tasksToShow.length === 0) {
             listEl.innerHTML = '<li style="text-align:center; color:#555; margin-top:20px;">暂无任务，享受生活吧 🎉</li>';
@@ -1799,6 +2036,12 @@
             const hasProgress = (totalChild > 0 || legacy > 0);
             li.className = `todo-item ${item.done ? 'done' : ''} ${hasProgress ? 'has-progress' : ''}`;
             
+            // --- 拖拽属性 ---
+            li.setAttribute('draggable', 'true');
+            li.dataset.id = item.id; // 用于排序识别
+            li.setAttribute('ondragstart', 'handleDragStart(event)');
+            li.setAttribute('ondragend', 'handleDragEnd(event)');
+
             // 针对周任务，显示“添加到今日”按钮
             const showAddToDayBtn = (item.type === 'week');
 
@@ -2083,6 +2326,12 @@
     }
 
     function toggleTimer() {
+        // 新增检查：防止倒计时为0时误触Start导致错误记时
+        if (!isRunning && timeLeft <= 0) {
+            alert("无法开始：倒计时已归零，请先重置(RESET)或修改时长。");
+            return;
+        }
+
         const btn = document.getElementById('startBtn');
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (isRunning) {
@@ -2130,63 +2379,213 @@
         setTimeout(() => { document.getElementById('vinyl').classList.remove('playing'); }, 5000);
     }
 
-    // --- 5. 微博热搜逻辑 (Multi-Source Fallback) ---
-    async function updateWeiboTrends() {
-        const listEl = document.getElementById('newsList');
-        const updateEl = document.getElementById('newsUpdate');
+    // --- 5. 多源热点资讯逻辑 (Multi-Source Trends) ---
+
+    // 源配置定义
+    const TREND_SOURCES = [
+        {
+            category: "视频/社区",
+            items: [
+                { type: "bilibili", name: "B站" },
+                { type: "douyin", name: "抖音" },
+                { type: "weibo", name: "微博" },
+                { type: "zhihu", name: "知乎" },
+                { type: "tieba", name: "贴吧" },
+                { type: "douban-movie", name: "豆瓣电影" },
+                { type: "douban-group", name: "豆瓣小组" },
+                { type: "kuaishou", name: "快手" },
+                { type: "acfun", name: "AcFun" },
+                { type: "hupu", name: "虎扑" },
+                { type: "miyoushe", name: "米游社" },
+                { type: "ngabbs", name: "NGA" },
+                { type: "v2ex", name: "V2EX" },
+                { type: "coolapk", name: "酷安" },
+                { type: "52pojie", name: "52破解" },
+                { type: "hostloc", name: "HostLoc" }
+            ]
+        },
+        {
+            category: "新闻/资讯",
+            items: [
+                { type: "baidu", name: "百度热搜" },
+                { type: "toutiao", name: "今日头条" },
+                { type: "thepaper", name: "澎湃新闻" },
+                { type: "sina-news", name: "新浪新闻" },
+                { type: "netease-news", name: "网易新闻" },
+                { type: "qq-news", name: "腾讯新闻" },
+                { type: "huxiu", name: "虎嗅" },
+                { type: "ifanr", name: "爱范儿" }
+            ]
+        },
+        {
+            category: "技术/IT",
+            items: [
+                { type: "sspai", name: "少数派" },
+                { type: "ithome", name: "IT之家" },
+                { type: "36kr", name: "36氪" },
+                { type: "juejin", name: "掘金" },
+                { type: "csdn", name: "CSDN" },
+                { type: "hellogithub", name: "HelloGithub" },
+                { type: "nodeseek", name: "NodeSeek" },
+                { type: "51cto", name: "51CTO" }
+            ]
+        },
+        {
+            category: "游戏/其他",
+            items: [
+                { type: "lol", name: "英雄联盟" },
+                { type: "genshin", name: "原神" },
+                { type: "starrail", name: "星穹铁道" },
+                { type: "weread", name: "微信读书" },
+                { type: "weatheralarm", name: "气象预警" },
+                { type: "history", name: "历史今天" }
+            ]
+        }
+    ];
+
+    let currentTrendType = null; // 当前正在显示的热榜类型
+
+    // 渲染设置面板中的数据源选项
+    function renderTrendSettings() {
+        const container = document.getElementById('trendSourceConfig');
+        container.innerHTML = '';
         
-        // 如果列表为空（首次加载），显示加载中
-        if (listEl.children.length === 0) {
-            listEl.innerHTML = '<li style="text-align:center; padding:10px; color:#aaa;">正在获取实时热搜...</li>';
+        const selected = appConfig.trendSources || [];
+
+        TREND_SOURCES.forEach(group => {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'source-group';
+            
+            groupDiv.innerHTML = `<div class="source-group-title">${group.category}</div>`;
+            
+            const grid = document.createElement('div');
+            grid.className = 'source-grid';
+            
+            group.items.forEach(item => {
+                const isSelected = selected.includes(item.type);
+                const label = document.createElement('label');
+                label.className = `source-item ${isSelected ? 'selected' : ''}`;
+                label.innerHTML = `
+                    <input type="checkbox" value="${item.type}" ${isSelected ? 'checked' : ''} onchange="toggleTrendSource(this)">
+                    ${item.name}
+                `;
+                grid.appendChild(label);
+            });
+            
+            groupDiv.appendChild(grid);
+            container.appendChild(groupDiv);
+        });
+    }
+
+    // 切换数据源勾选状态
+    window.toggleTrendSource = function(checkbox) {
+        const type = checkbox.value;
+        let selected = appConfig.trendSources;
+
+        if (checkbox.checked) {
+            if (selected.length >= 5) {
+                alert("最多只能选择 5 个数据源，请先取消其他选择。");
+                checkbox.checked = false;
+                return;
+            }
+            selected.push(type);
+        } else {
+            selected = selected.filter(t => t !== type);
         }
 
-        try {
-            // 尝试源 1: uapis.cn (带时间戳防缓存)
-            const uapiUrl = `https://uapis.cn/api/v1/misc/hotboard?type=weibo&t=${new Date().getTime()}`;
-            const res = await fetch(uapiUrl);
-            if (!res.ok) throw new Error("Source 1 Failed");
-            
-            const data = await res.json();
+        // 更新状态并保存
+        appConfig.trendSources = selected;
+        // 如果列表为空，默认回退到微博防止报错
+        if (appConfig.trendSources.length === 0) appConfig.trendSources = ['weibo'];
+        
+        saveConfig();
+        
+        // 视觉反馈
+        checkbox.parentElement.classList.toggle('selected', checkbox.checked);
+    };
 
-            if (data.list && Array.isArray(data.list) && data.list.length > 0) {
-                renderTrends(data.list, 'uapis');
-                return; // 成功则退出
-            } else {
-                throw new Error("Source 1 Invalid Data");
+    // 渲染主界面热榜 Tabs
+    function renderTrendTabs() {
+        const container = document.getElementById('trendTabs');
+        const selected = appConfig.trendSources;
+        
+        container.innerHTML = '';
+        
+        selected.forEach((type, index) => {
+            // 查找对应的中文名
+            let name = type;
+            for(const group of TREND_SOURCES) {
+                const item = group.items.find(i => i.type === type);
+                if(item) { name = item.name; break; }
             }
-        } catch (e1) {
-            console.warn("源1 (UAPI) 失败:", e1);
             
-            // 尝试源 2: vvhan.com (作为备用)
-            try {
-                const vvhanUrl = `https://api.vvhan.com/api/hotlist?type=wbHot&t=${new Date().getTime()}`;
-                const res2 = await fetch(vvhanUrl);
-                if (!res2.ok) throw new Error("Source 2 Failed");
-                
-                const data2 = await res2.json();
-                
-                const list = data2.data || data2; 
-                if (Array.isArray(list) && list.length > 0) {
-                     const normalizedList = list.map(item => ({
-                         title: item.title,
-                         url: item.url,
-                         hot_value: item.hot || item.desc || ''
-                     }));
-                     renderTrends(normalizedList, 'vvhan');
-                     return;
-                } else {
-                    throw new Error("Source 2 Invalid Data");
-                }
-            } catch (e2) {
-                console.error("源2 (VVHAN) 失败:", e2);
-                renderMockTrends(); // 最终回退
+            const btn = document.createElement('button');
+            btn.className = `trend-tab-btn ${currentTrendType === type ? 'active' : ''}`;
+            btn.innerText = name;
+            btn.onclick = () => switchTrendTab(type);
+            container.appendChild(btn);
+        });
+
+        // 默认选中第一个，或者保持当前（如果还在列表中）
+        if (!currentTrendType || !selected.includes(currentTrendType)) {
+            if (selected.length > 0) {
+                switchTrendTab(selected[0]);
             }
+        } else {
+             // 刷新 Tab 高亮状态
+             switchTrendTab(currentTrendType);
         }
     }
 
-    function renderTrends(list, source) {
+    // 切换热榜 Tab 并获取数据
+    function switchTrendTab(type) {
+        currentTrendType = type;
+        
+        // 更新 UI 高亮
+        document.querySelectorAll('.trend-tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            // 简单匹配文本重新高亮 (这里简化处理，实际可以通过 data-type 属性更严谨)
+            let name = "";
+            for(const group of TREND_SOURCES) {
+                const item = group.items.find(i => i.type === type);
+                if(item) { name = item.name; break; }
+            }
+            if (btn.innerText === name) btn.classList.add('active');
+        });
+
+        fetchTrendData(type);
+    }
+
+    // 获取热榜数据
+    async function fetchTrendData(type) {
         const listEl = document.getElementById('newsList');
-        const trends = list.slice(0, 6);
+        const updateEl = document.getElementById('newsUpdate');
+        
+        listEl.innerHTML = '<li style="text-align:center; padding:10px; color:#aaa;"><i class="ph-bold ph-spinner" style="animation:spin 1s linear infinite;"></i> 加载中...</li>';
+        
+        try {
+            const url = `https://uapis.cn/api/v1/misc/hotboard?type=${type}&t=${new Date().getTime()}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("API Failed");
+            
+            const data = await res.json();
+            
+            // 适配 JSON 结构 { list: [ { title, url, hot_value, ... } ], type: "...", update_time: "..." }
+            if (data.list && Array.isArray(data.list) && data.list.length > 0) {
+                renderTrendList(data.list);
+                updateEl.innerText = `更新于: ${data.update_time || '刚刚'}`;
+            } else {
+                throw new Error("No Data");
+            }
+        } catch (e) {
+            console.error("热榜获取失败:", e);
+            listEl.innerHTML = '<li style="text-align:center; padding:10px; color:var(--accent);">获取失败，请稍后重试</li>';
+        }
+    }
+
+    function renderTrendList(list) {
+        const listEl = document.getElementById('newsList');
+        const trends = list.slice(0, 6); // 只取前6条
         
         listEl.innerHTML = trends.map((t, i) => `
             <li class="trend-item">
@@ -2195,34 +2594,8 @@
                 <span class="trend-score">${t.hot_value || ''}</span>
             </li>
         `).join('');
-
-        // 更新时间
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('newsUpdate').innerText = `更新于: ${timeStr} (源: ${source})`;
     }
 
-    function renderMockTrends() {
-        const mockTrends = [
-            { title: "服务器连接超时，显示模拟数据", hot: "⚠️" },
-            { title: "SpaceX 星舰发射成功", hot: "🔥 480w" },
-            { title: "如何高效使用 AI 工具", hot: "320w" },
-            { title: "周末去哪儿玩", hot: "210w" },
-            { title: "Python 学习路线图", hot: "150w" }
-        ];
-        document.getElementById('newsList').innerHTML = mockTrends.map((t, i) => `
-            <li class="trend-item">
-                <span class="trend-rank">${i+1}</span>
-                <a href="https://s.weibo.com/weibo?q=${encodeURIComponent(t.title)}" target="_blank" class="trend-link">${t.title}</a>
-                <span class="trend-score">${t.hot}</span>
-            </li>
-        `).join('');
-        document.getElementById('newsUpdate').innerText = "离线模式";
-    }
-
-    // 初始化热搜
-    updateWeiboTrends();
-    setInterval(updateWeiboTrends, 600000);
     
     // --- 6. 高德天气系统 (Web 服务 API REST 版 + CORS Proxy) ---
     const weatherConfig = {
@@ -2391,12 +2764,59 @@
         if(e.key === 'Enter') searchLocation();
     }
 
+    // --- 7. 每日新闻摘要逻辑 (新增) ---
+    function checkNewsStatus() {
+        const lastView = localStorage.getItem('cyberNewsLastView');
+        const today = new Date().toDateString();
+        const badge = document.getElementById('newsBadge');
+        
+        if (lastView !== today) {
+            badge.classList.add('show');
+        } else {
+            badge.classList.remove('show');
+        }
+    }
+
+    function openNewsModal() {
+        const modal = document.getElementById('newsSummaryModal');
+        const container = document.getElementById('newsImgContainer');
+        const badge = document.getElementById('newsBadge');
+        
+        modal.classList.add('show');
+        
+        // 标记为已读
+        localStorage.setItem('cyberNewsLastView', new Date().toDateString());
+        badge.classList.remove('show');
+
+        // 加载图片 (防缓存)
+        container.innerHTML = '<div class="loading-text"><i class="ph-bold ph-spinner" style="animation:spin 1s linear infinite; font-size:24px;"></i><br><br>正在生成今日简报...<br>可能需要 5-10 秒</div>';
+        
+        const img = new Image();
+        // 添加时间戳防止缓存
+        img.src = `https://uapis.cn/api/v1/daily/news-image?t=${new Date().getTime()}`;
+        img.onload = () => {
+            container.innerHTML = '';
+            container.appendChild(img);
+        };
+        img.onerror = () => {
+             container.innerHTML = '<div class="loading-text" style="color:var(--accent)">获取失败<br>请检查网络或稍后再试</div>';
+        };
+    }
+
+    function closeNewsModal() {
+        document.getElementById('newsSummaryModal').classList.remove('show');
+    }
+
     // --- ESC 关闭所有弹窗 (新增) ---
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             const openModals = document.querySelectorAll('.modal-overlay.show');
             openModals.forEach(modal => {
                 modal.classList.remove('show');
+                // 如果关闭的是设置弹窗，刷新热榜
+                if (modal.id === 'configModal') {
+                    renderTrendTabs();
+                }
             });
         }
     });
@@ -2404,6 +2824,7 @@
     // 初始化调用 (放到最后确保 Config 变量已就绪)
     applyAppConfig(); 
     initWeather();
+    checkNewsStatus(); // Initialize check
     setInterval(() => {
         fetchWeather(weatherConfig.adcode, weatherConfig.city);
     }, 1800000);
