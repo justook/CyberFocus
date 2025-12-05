@@ -462,10 +462,9 @@
         }
         .edit-stat-btn:hover { opacity: 1; color: var(--primary); }
 
-        /* 副数据网格 */
+        /* 副数据网格 - 改为Flex以支持自适应 */
         .stat-grid-sub {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            display: flex;
             gap: 8px;
         }
         .stat-box {
@@ -475,6 +474,8 @@
             text-align: center;
             border: 1px solid transparent;
             transition: 0.3s;
+            flex: 1; /* Stretch to fill */
+            min-width: 0; /* Prevent overflow */
         }
         .stat-box:hover { border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); }
         
@@ -599,6 +600,27 @@
         
         #contributionInput {
             width: 80px; display: none; /* 默认隐藏 */
+        }
+        
+        /* 每日任务样式 (New) */
+        .daily-checkbox-wrapper {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 12px; color: var(--text-sec);
+            cursor: pointer; user-select: none;
+            margin-left: 8px;
+        }
+        .daily-checkbox-wrapper input {
+            width: 16px; height: 16px; accent-color: var(--warning);
+            margin: 0;
+        }
+        .daily-badge {
+            font-size: 10px; 
+            background: rgba(255, 191, 0, 0.15); 
+            color: var(--warning); 
+            border: 1px solid rgba(255, 191, 0, 0.3); 
+            padding: 1px 4px; border-radius: 4px; 
+            margin-right: 5px; 
+            display: inline-flex; align-items: center; gap: 3px;
         }
 
         /* 列表项 */
@@ -1164,7 +1186,7 @@
                 <!-- 专注数据仪表盘 (新) -->
                 <div class="stats-dashboard" id="statsDashboard">
                     <!-- 今日专注 (主) -->
-                    <div class="stat-main">
+                    <div class="stat-main" id="statContainer-today">
                         <div class="stat-main-header">
                             <span><i class="ph-fill ph-target"></i> 今日专注</span>
                             <button class="edit-stat-btn" onclick="openStatModal()" title="手动修改今日时长">
@@ -1175,16 +1197,16 @@
                     </div>
                     
                     <!-- 历史数据网格 (副) -->
-                    <div class="stat-grid-sub">
-                        <div class="stat-box">
+                    <div class="stat-grid-sub" id="statGridSub">
+                        <div class="stat-box" id="statContainer-month">
                             <span class="stat-label-sub">本月</span>
                             <div class="stat-val-sub" id="statMonth">0h</div>
                         </div>
-                        <div class="stat-box">
+                        <div class="stat-box" id="statContainer-year">
                             <span class="stat-label-sub">本年</span>
                             <div class="stat-val-sub" id="statYear">0h</div>
                         </div>
-                        <div class="stat-box">
+                        <div class="stat-box" id="statContainer-total">
                             <span class="stat-label-sub">总计</span>
                             <div class="stat-val-sub" id="statTotal">0h</div>
                         </div>
@@ -1236,6 +1258,11 @@
                             <!-- JS 动态填充 -->
                         </select>
                         <input type="number" id="contributionInput" placeholder="占比%" min="1" max="100" title="完成该任务可为父任务增加多少百分比进度">
+                        
+                        <!-- 每日任务勾选 (New) -->
+                        <label class="daily-checkbox-wrapper" title="开启后每天自动重置并保留在今日列表">
+                            <input type="checkbox" id="isDailyInput"> 📅 每日
+                        </label>
                     </div>
                 </div>
 
@@ -1381,10 +1408,14 @@
                         <span class="toggle-label">显示模块</span>
                         <label class="switch"><input type="checkbox" id="chk-todoCard" onchange="toggleModule('todoCard')"><span class="slider"></span></label>
                     </div>
-                    <!-- Added -->
                     <div class="toggle-row">
                         <span class="toggle-label">已完成任务沉底</span>
                         <label class="switch"><input type="checkbox" id="chk-autoMoveDone" onchange="toggleAutoMoveDone()"><span class="slider"></span></label>
+                    </div>
+                    <!-- New Setting -->
+                    <div class="toggle-row">
+                        <span class="toggle-label">每日任务每天自动重置</span>
+                        <label class="switch"><input type="checkbox" id="chk-dailyTaskEnable" onchange="toggleDailyTasks()"><span class="slider"></span></label>
                     </div>
                 </div>
 
@@ -1403,6 +1434,26 @@
                     <div class="toggle-row">
                         <span class="toggle-label">显示模块</span>
                         <label class="switch"><input type="checkbox" id="chk-pomoCard" onchange="toggleModule('pomoCard')"><span class="slider"></span></label>
+                    </div>
+                    <!-- New Toggles for Stats Visibility -->
+                    <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                        <div style="font-size:12px; color:#aaa; margin-bottom:10px;">统计数据显示</div>
+                        <div class="toggle-row">
+                            <span class="toggle-label">今日时长</span>
+                            <label class="switch"><input type="checkbox" id="chk-statToday" onchange="togglePomoStat('today')"><span class="slider"></span></label>
+                        </div>
+                        <div class="toggle-row">
+                            <span class="toggle-label">本月时长</span>
+                            <label class="switch"><input type="checkbox" id="chk-statMonth" onchange="togglePomoStat('month')"><span class="slider"></span></label>
+                        </div>
+                        <div class="toggle-row">
+                            <span class="toggle-label">本年时长</span>
+                            <label class="switch"><input type="checkbox" id="chk-statYear" onchange="togglePomoStat('year')"><span class="slider"></span></label>
+                        </div>
+                        <div class="toggle-row">
+                            <span class="toggle-label">总计时长</span>
+                            <label class="switch"><input type="checkbox" id="chk-statTotal" onchange="togglePomoStat('total')"><span class="slider"></span></label>
+                        </div>
                     </div>
                 </div>
 
@@ -1453,7 +1504,7 @@
                     <div class="config-header">关于</div>
                     <div style="text-align:center; margin-top:40px;">
                         <h2 style="color:#fff; font-family:'Courier New', monospace;">CyberFocus</h2>
-                        <p style="color:var(--primary); font-size:18px;">v0.6.0</p>
+                        <p style="color:var(--primary); font-size:18px;">v0.6.1</p>
                         <p style="color:#aaa; font-size:12px; margin-top:20px;">Designed for Productivity & Aesthetics.</p>
                     </div>
                 </div>
@@ -1482,7 +1533,8 @@
         bgUrl: '',
         showDate: true,
         showLunar: false,
-        autoMoveDone: false, // New property
+        autoMoveDone: false, 
+        enableDailyTasks: true, // 新增：是否开启每日任务重置
         amapKey: 'c0a1a7a74be675ec71f73f3be7463166', // 默认Key
         trendSources: ['weibo'], // 默认只有微博
         inspirationMode: 'saying', // 'saying' | 'answerbook'
@@ -1495,7 +1547,13 @@
             musicCard: true,
             pomoCard: true,
             weiboCard: true,
-            newsCard: true // 此时 newsCard 代表 灵感与娱乐模块
+            newsCard: true 
+        },
+        pomoStats: { // 新增：番茄钟统计显示配置
+            today: true,
+            month: true,
+            year: true,
+            total: true
         }
     };
 
@@ -1507,7 +1565,8 @@
         ...defaultConfig, 
         ...appConfig, 
         modules: { ...defaultConfig.modules, ...appConfig.modules },
-        trendSources: appConfig.trendSources || defaultConfig.trendSources // 兼容旧数据
+        trendSources: appConfig.trendSources || defaultConfig.trendSources, // 兼容旧数据
+        pomoStats: { ...defaultConfig.pomoStats, ...appConfig.pomoStats } // 合并统计配置
     };
 
     function saveConfig() {
@@ -1546,6 +1605,9 @@
 
         // 6. 初始化灵感模块
         initInspirationModule();
+
+        // 7. 更新统计显示
+        applyPomoStatsVisibility();
     }
 
     function updateConfigInputs() {
@@ -1560,10 +1622,18 @@
             if(chk) chk.checked = visible;
         }
 
+        // 统计开关回显
+        const s = appConfig.pomoStats;
+        document.getElementById('chk-statToday').checked = s.today;
+        document.getElementById('chk-statMonth').checked = s.month;
+        document.getElementById('chk-statYear').checked = s.year;
+        document.getElementById('chk-statTotal').checked = s.total;
+
         // 其它
         document.getElementById('chk-date').checked = appConfig.showDate;
         document.getElementById('chk-lunar').checked = appConfig.showLunar;
-        document.getElementById('chk-autoMoveDone').checked = appConfig.autoMoveDone; // New line
+        document.getElementById('chk-autoMoveDone').checked = appConfig.autoMoveDone; 
+        document.getElementById('chk-dailyTaskEnable').checked = appConfig.enableDailyTasks; 
         document.getElementById('cfgAmapKey').value = appConfig.amapKey;
         
         // 灵感模式回显
@@ -1618,6 +1688,37 @@
         saveConfig();
         applyAppConfig();
     }
+    
+    // 番茄钟统计开关
+    function togglePomoStat(key) {
+        appConfig.pomoStats[key] = document.getElementById('chk-stat' + key.charAt(0).toUpperCase() + key.slice(1)).checked;
+        saveConfig();
+        applyAppConfig();
+    }
+
+    function applyPomoStatsVisibility() {
+        const s = appConfig.pomoStats;
+        // 今日
+        const todayEl = document.getElementById('statContainer-today');
+        if(todayEl) todayEl.style.display = s.today ? 'block' : 'none';
+
+        // 副网格
+        const monthEl = document.getElementById('statContainer-month');
+        const yearEl = document.getElementById('statContainer-year');
+        const totalEl = document.getElementById('statContainer-total');
+        
+        if(monthEl) monthEl.style.display = s.month ? 'block' : 'none';
+        if(yearEl) yearEl.style.display = s.year ? 'block' : 'none';
+        if(totalEl) totalEl.style.display = s.total ? 'block' : 'none';
+        
+        // 如果副网格全隐藏，则隐藏容器以优化间距 (可选，但由于flex布局，隐藏元素不占位，空容器高度可能为0或仅padding)
+        const subGrid = document.getElementById('statGridSub');
+        if (!s.month && !s.year && !s.total) {
+            if(subGrid) subGrid.style.display = 'none';
+        } else {
+            if(subGrid) subGrid.style.display = 'flex';
+        }
+    }
 
     // 日期显示设置
     function toggleDateDisplay() {
@@ -1631,6 +1732,11 @@
         appConfig.autoMoveDone = document.getElementById('chk-autoMoveDone').checked;
         saveConfig();
         renderList();
+    }
+    
+    function toggleDailyTasks() {
+        appConfig.enableDailyTasks = document.getElementById('chk-dailyTaskEnable').checked;
+        saveConfig();
     }
 
     function toggleDateDisplayUI() {
@@ -1849,13 +1955,63 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- 2. 待办事项逻辑 (增强版：层级 + 进度 + Deadline + 一键拆解) ---
+    // --- 2. 待办事项逻辑 (增强版：层级 + 进度 + Deadline + 一键拆解 + 每日任务) ---
     let currentTab = 'todo';
     let draggedItem = null; // 拖拽全局变量
 
-    // 数据结构：Item: { id, text, type: 'todo'|'day'|'week', done: bool, deadline: string, parentId: string|null, contribution: number|null, legacyProgress: number|0 }
+    // 数据结构：Item: { id, text, type: 'todo'|'day'|'week', done: bool, deadline: string, parentId: string|null, contribution: number|null, legacyProgress: number|0, isDaily: bool }
     let allTasks = JSON.parse(localStorage.getItem('cyberTasks')) || [];
     if (!Array.isArray(allTasks)) allTasks = [];
+
+    // --- NEW: 每日任务重置逻辑 ---
+    function checkDailyReset() {
+        if (!appConfig.enableDailyTasks) return;
+        
+        const lastRunDate = localStorage.getItem('cyberLastRunDate');
+        const todayStr = new Date().toDateString(); // e.g., "Mon Sep 28 2023"
+
+        if (lastRunDate !== todayStr) {
+            // 是新的一天，执行重置
+            let hasChanged = false;
+            
+            allTasks.forEach(task => {
+                if (task.isDaily && task.type === 'day') {
+                    // 如果任务完成了，需要将进度累积到父任务 (如果存在)
+                    if (task.done && task.parentId && task.contribution) {
+                        const parent = allTasks.find(p => p.id === task.parentId);
+                        if (parent) {
+                            // 累积贡献值到 legacyProgress
+                            const val = parseInt(task.contribution);
+                            if (!isNaN(val) && val > 0) {
+                                parent.legacyProgress = (parent.legacyProgress || 0) + val;
+                                // 限制最大 100
+                                if (parent.legacyProgress > 100) parent.legacyProgress = 100;
+                            }
+                        }
+                    }
+
+                    // 重置状态
+                    task.done = false;
+                    
+                    // 自动更新 Deadline 到今天 23:59
+                    const now = new Date();
+                    const yyyy = now.getFullYear();
+                    const mm = String(now.getMonth() + 1).padStart(2, '0');
+                    const dd = String(now.getDate()).padStart(2, '0');
+                    task.deadline = `${yyyy}-${mm}-${dd}T23:59`;
+                    
+                    hasChanged = true;
+                }
+            });
+
+            if (hasChanged) {
+                saveData();
+                console.log("Daily tasks reset for new day:", todayStr);
+            }
+            
+            localStorage.setItem('cyberLastRunDate', todayStr);
+        }
+    }
 
     // 暴露函数给 window，确保 HTML onclick 属性可以访问
     window.deleteTask = function(id, event) {
@@ -1950,7 +2106,7 @@
         const children = allTasks.filter(t => t.parentId === parentId);
         let assignedPercent = 0;
         children.forEach(c => {
-             if (c.contribution) assignedPercent += parseInt(c.contribution);
+            if (c.contribution) assignedPercent += parseInt(c.contribution);
         });
         const legacy = parentTask.legacyProgress || 0;
         const remaining = Math.max(0, 100 - legacy - assignedPercent);
@@ -2089,9 +2245,6 @@
         
         let tasksToShow = allTasks.filter(t => t.type === currentTab);
         
-        // 移除自动排序，尊重 allTasks 中的顺序（即用户拖拽后的顺序）
-        // tasksToShow.sort(...) <--- Removed
-
         // 如果开启了“已完成任务沉底”
         if (appConfig.autoMoveDone) {
             tasksToShow.sort((a, b) => {
@@ -2170,6 +2323,7 @@
                             ${parentTask ? `<span class="parent-tag">${parentTask.text}</span>` : ''}
                             ${item.text}
                             ${item.contribution ? `<span class="contribution-tag" title="进度贡献">权重 ${item.contribution}%</span>` : ''}
+                            ${item.isDaily ? `<span class="daily-badge" title="每日任务"><i class="ph-bold ph-repeat"></i> 每日</span>` : ''}
                         </div>
                     </div>
                     
@@ -2226,6 +2380,7 @@
         const deadlineInput = document.getElementById('deadlineInput');
         const parentSelect = document.getElementById('parentSelect');
         const contributionInput = document.getElementById('contributionInput');
+        const isDailyInput = document.getElementById('isDailyInput'); // New
         
         const text = input.value.trim();
         if (!text) return;
@@ -2238,19 +2393,20 @@
             deadline: deadlineInput.value,
             parentId: parentSelect.value || null,
             contribution: contributionInput.value ? parseInt(contributionInput.value) : null,
-            legacyProgress: 0 // 初始化
+            legacyProgress: 0,
+            isDaily: isDailyInput.checked // New
         };
         
         allTasks.unshift(newTask);
         
         // 清空
         input.value = '';
-        if (currentTab !== 'day') deadlineInput.value = ''; // 如果不是今日计划，清空时间
-        // 如果是今日计划，保留今天的时间，因为通常会连续添加
+        if (currentTab !== 'day') deadlineInput.value = ''; 
         
         parentSelect.value = '';
         contributionInput.value = '';
         contributionInput.style.display = 'none';
+        isDailyInput.checked = false; // Reset checkbox
         
         saveData();
         renderList();
@@ -2288,6 +2444,7 @@
     }
     
     // 初始化
+    checkDailyReset(); // Check reset before render
     renderList();
     updateParentOptions();
     // 初始调用一次 switchTab 以触发今日计划的时间设置（如果默认是day的话，但默认是todo）
@@ -2295,6 +2452,7 @@
 
 
     // --- 3. 番茄钟逻辑 (增强版：全历史统计) ---
+    // (此处保持原有逻辑不变，省略以缩减篇幅，实际应用中保留)
     let timerInterval;
     let defaultTime = 25 * 60;
     let timeLeft = defaultTime;
