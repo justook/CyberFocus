@@ -204,20 +204,76 @@
             visibility: visible;
         }
 
-        .search-select {
-            background: transparent;
-            border: none;
-            color: var(--text-sec);
+        /* --- 深度美化下拉菜单 (Select) --- */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            /* 背景更深，突出文字 */
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
             font-size: 13px;
-            margin-right: 5px;
-            cursor: pointer;
             font-family: inherit;
-            padding: 5px;
+            /* 增加内边距，特别是右侧留给箭头 */
+            padding: 10px 40px 10px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            
+            /* 更现代的 SVG 箭头图标 */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%23a0a0a0'%3e%3cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3e%3c/path%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        select:hover {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.3);
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%23ffffff'%3e%3cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3e%3c/path%3e%3c/svg%3e");
+        }
+
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 242, 234, 0.25);
+            background-color: rgba(0, 0, 0, 0.8);
+            /* 激活时箭头高亮 */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%2300f2ea'%3e%3cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3e%3c/path%3e%3c/svg%3e");
+        }
+
+        /* 强制深色背景的 Option，防止出现白色下拉框 */
+        select option {
+            background-color: #151522;
+            color: #fff;
+            padding: 12px;
+        }
+
+        /* 针对搜索框内 select 的特殊微调 (保留透明背景) */
+        .search-select {
+            background-color: transparent;
+            border: none;
             border-radius: 4px;
             font-weight: 600;
+            padding: 5px 25px 5px 5px;
+            width: auto;
+            box-shadow: none;
+            color: var(--text-sec);
         }
-        .search-select:hover { color: #fff; background: rgba(255,255,255,0.1); }
-        .search-select option { background: #1a1a2e; color: #fff; }
+        .search-select:hover {
+            background-color: rgba(255,255,255,0.1);
+            border: none;
+            box-shadow: none;
+            color: #fff;
+        }
+        .search-select:focus {
+            background-color: rgba(0,0,0,0.5);
+            border: none;
+            box-shadow: none;
+        }
 
         .search-divider {
             width: 1px; height: 20px; background: rgba(255,255,255,0.15); margin: 0 8px;
@@ -522,6 +578,13 @@
             width: 90%;
             position: relative; /* Fixed: 确保内部绝对定位元素相对于此容器定位 */
         }
+        /* 特别优化天气模态框居中，移除 inline styles 影响 */
+        #locModal .modal-content {
+            max-width: 350px;
+            width: 90%;
+            margin: 0; /* Ensure automatic margins help flexbox centering if needed */
+        }
+
         .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-content h2, .modal-content h3 { margin-bottom: 15px; color: var(--primary); justify-content: center; }
         .modal-content p { margin-bottom: 20px; color: #ddd; line-height: 1.6; }
@@ -587,7 +650,7 @@
         .task-input-container input[type="datetime-local"], 
         .task-input-container select,
         .task-input-container input[type="number"] {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
             padding: 10px; border-radius: 10px; color: #fff; font-size: 12px;
             color-scheme: dark; /* 适配暗色日历控件 */
         }
@@ -1067,6 +1130,14 @@
         /* 隐藏模块通用类 */
         .module-hidden { display: none !important; }
 
+        /* 位置设置模态框特别优化 */
+        #locModal .modal-content {
+            max-width: 350px;
+            width: 90%;
+            /* 移除可能导致偏移的 margin: auto */
+            margin: 0; 
+        }
+
     </style>
 </head>
 <body>
@@ -1137,20 +1208,6 @@
                 <!-- 出行建议条 -->
                 <div class="weather-tip" id="w-tip">
                     <i class="ph-fill ph-sparkle"></i> 正在连接高德天气...
-                </div>
-            </div>
-
-            <!-- 位置设置模态框 -->
-            <div id="locModal" class="modal-overlay">
-                <div class="modal-content" style="max-width: 350px;">
-                    <h3>📍 切换城市</h3>
-                    <p style="font-size:12px; color:#aaa; margin-bottom:15px;">输入城市中文名称 (如: 朝阳区)</p>
-                    <div class="input-group">
-                        <input type="text" id="cityInput" placeholder="请输入城市名称..." onkeypress="handleLocEnter(event)">
-                        <button class="btn-primary" onclick="searchLocation()">搜索</button>
-                    </div>
-                    <div id="locMsg" style="height: 20px; font-size: 12px; margin-top: 5px; color: var(--accent);"></div>
-                    <button class="btn-sec" onclick="closeLocModal()" style="margin-top: 15px; width: 100%;">取消</button>
                 </div>
             </div>
         </div>
@@ -1392,8 +1449,9 @@
                     <div class="config-header">全部设置</div>
                     <div class="input-group">
                         <label class="toggle-label" style="display:block; margin-bottom:5px;">页面背景</label>
-                        <select id="cfgBgType" class="search-select" style="width:100%; padding:10px; background:rgba(0,0,0,0.3); border:1px solid #444;" onchange="handleBgChange()">
+                        <select id="cfgBgType" style="width:100%;" onchange="handleBgChange()">
                             <option value="default">默认 (动态渐变)</option>
+                            <option value="bing">Bing 每日壁纸</option>
                             <option value="custom">自定义图片</option>
                         </select>
                         <input type="text" id="cfgBgUrl" placeholder="输入图片 URL..." style="display:none; margin-top:10px;" onchange="handleBgChange()">
@@ -1559,7 +1617,7 @@
                     <div class="config-header">关于</div>
                     <div style="text-align:center; margin-top:40px;">
                         <h2 style="color:#fff; font-family:'Courier New', monospace;">CyberFocus</h2>
-                        <p style="color:var(--primary); font-size:18px;">v0.6.2</p>
+                        <p style="color:var(--primary); font-size:18px;">v0.6.3</p>
                         <p style="color:#aaa; font-size:12px; margin-top:20px;">Designed for Productivity & Aesthetics.</p>
                     </div>
                 </div>
@@ -1580,11 +1638,25 @@
         </div>
     </div>
 
+    <!-- 位置设置模态框 (移至body底部以修复backdrop-filter下的定位问题) -->
+    <div id="locModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>📍 切换城市</h3>
+            <p style="font-size:12px; color:#aaa; margin-bottom:15px;">输入城市中文名称 (如: 朝阳区)</p>
+            <div class="input-group">
+                <input type="text" id="cityInput" placeholder="请输入城市名称..." onkeypress="handleLocEnter(event)">
+                <button class="btn-primary" onclick="searchLocation()">搜索</button>
+            </div>
+            <div id="locMsg" style="height: 20px; font-size: 12px; margin-top: 5px; color: var(--accent);"></div>
+            <button class="btn-sec" onclick="closeLocModal()" style="margin-top: 15px; width: 100%;">取消</button>
+        </div>
+    </div>
+
 <script>
     // --- 0. 全局配置逻辑 (NEW) ---
     // 默认配置
     const defaultConfig = {
-        bgType: 'default', // default | custom
+        bgType: 'default', // default | custom | bing
         bgUrl: '',
         showDate: true,
         showLunar: false,
@@ -1636,6 +1708,11 @@
         const body = document.body;
         if (appConfig.bgType === 'custom' && appConfig.bgUrl) {
             body.style.backgroundImage = `url('${appConfig.bgUrl}')`;
+            body.classList.add('custom-bg');
+        } else if (appConfig.bgType === 'bing') {
+            // 使用日期参数避免缓存旧图，每天刷新
+            const today = new Date().toISOString().split('T')[0];
+            body.style.backgroundImage = `url('https://uapis.cn/api/v1/image/bing-daily?d=${today}')`;
             body.classList.add('custom-bg');
         } else {
             body.style.backgroundImage = '';
