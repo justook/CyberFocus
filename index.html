@@ -24,6 +24,10 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         
+        html {
+            scroll-behavior: smooth; /* 全局平滑滚动 */
+        }
+
         body {
             font-family: 'Inter', 'Segoe UI', 'PingFang SC', sans-serif;
             background: var(--bg-gradient);
@@ -32,9 +36,13 @@
             animation: gradientBG 15s ease infinite; /* 动态背景 */
             color: var(--text-main);
             min-height: 100vh;
-            padding: 20px;
+            margin: 0; /* 移除默认边距，由内部section控制padding */
             overflow-x: hidden;
             transition: background 0.5s ease;
+        }
+
+        ::-webkit-scrollbar {
+            display: none; /* 隐藏滚动条 (WebKit浏览器) */
         }
 
         /* 自定义背景图样式覆盖 */
@@ -67,10 +75,22 @@
             100% { transform: translate(30px, 50px); }
         }
 
-        /* --- 布局容器 --- */
+        /* --- 第一屏：效率仪表盘容器 --- */
+        .screen-dashboard {
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            /* justify-content: center; 垂直居中 */
+            position: relative;
+        }
+
+
+        /* --- 原 Container (保持原有布局) --- */
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
             display: grid;
             grid-template-columns: 300px 1fr 320px;
             gap: 25px;
@@ -78,7 +98,7 @@
                 "header header header"
                 "sidebar main extra";
             padding-bottom: 60px; /* 为底部设置按钮留空 */
-        }
+        }        
 
         @media (max-width: 900px) {
             .container {
@@ -209,13 +229,11 @@
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            /* 背景更深，突出文字 */
             background-color: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.15);
             color: var(--text-main);
             font-size: 13px;
             font-family: inherit;
-            /* 增加内边距，特别是右侧留给箭头 */
             padding: 10px 40px 10px 15px;
             border-radius: 12px;
             cursor: pointer;
@@ -223,8 +241,6 @@
             width: 100%;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            
-            /* 更现代的 SVG 箭头图标 */
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%23a0a0a0'%3e%3cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3e%3c/path%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 12px center;
@@ -241,18 +257,15 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(0, 242, 234, 0.25);
             background-color: rgba(0, 0, 0, 0.8);
-            /* 激活时箭头高亮 */
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%2300f2ea'%3e%3cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3e%3c/path%3e%3c/svg%3e");
         }
 
-        /* 强制深色背景的 Option，防止出现白色下拉框 */
         select option {
             background-color: #151522;
             color: #fff;
             padding: 12px;
         }
 
-        /* 针对搜索框内 select 的特殊微调 (保留透明背景) */
         .search-select {
             background-color: transparent;
             border: none;
@@ -368,7 +381,6 @@
             margin-top: 5px;
         }
 
-        /* 出行建议胶囊 */
         .weather-tip {
             background: linear-gradient(90deg, rgba(0,242,234,0.1), rgba(0,0,0,0));
             padding: 6px 12px;
@@ -385,7 +397,6 @@
         /* --- 2. 侧边栏 --- */
         .sidebar { grid-area: sidebar; display: flex; flex-direction: column; gap: 25px; }
 
-        /* 快捷键按钮 - 增强版 */
         .shortcuts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         .shortcut-btn {
             background: rgba(255, 255, 255, 0.03);
@@ -418,7 +429,6 @@
             border-color: var(--primary);
             color: var(--primary);
         }
-        /* 编辑模式下的删除徽章 */
         .del-badge {
             position: absolute; top: -8px; right: -8px;
             width: 20px; height: 20px; background: var(--accent);
@@ -432,7 +442,6 @@
         @keyframes shake { 0% { transform: rotate(-1deg); } 100% { transform: rotate(1deg); } }
 
 
-        /* 番茄钟 */
         .pomodoro-container { position: relative; text-align: center; padding: 10px 0; }
         .timer-circle {
             width: 180px; height: 180px; margin: 0 auto;
@@ -443,7 +452,6 @@
             position: relative;
         }
 
-        /* --- 番茄钟自定义设置样式 --- */
         .timer-settings {
             margin-top: 15px;
             display: flex;
@@ -454,14 +462,8 @@
             color: var(--text-sec);
             transition: opacity 0.3s;
         }
+        .timer-settings.disabled { opacity: 0.3; pointer-events: none; }
 
-        /* 当倒计时运行时，隐藏设置，防止误触 */
-        .timer-settings.disabled {
-            opacity: 0.3;
-            pointer-events: none;
-        }
-
-        /* 美化数字输入框 */
         #customMinutes {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -476,7 +478,6 @@
         }
         #customMinutes:focus { border-color: var(--primary); }
 
-        /* --- 专注数据仪表盘 (新) --- */
         .stats-dashboard {
             margin-top: 25px;
             background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
@@ -488,7 +489,6 @@
             gap: 15px;
             transition: 0.3s;
         }
-        /* 主数据区 */
         .stat-main {
             text-align: left;
             border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -518,11 +518,7 @@
         }
         .edit-stat-btn:hover { opacity: 1; color: var(--primary); }
 
-        /* 副数据网格 - 改为Flex以支持自适应 */
-        .stat-grid-sub {
-            display: flex;
-            gap: 8px;
-        }
+        .stat-grid-sub { display: flex; gap: 8px; }
         .stat-box {
             background: rgba(0,0,0,0.25);
             border-radius: 8px;
@@ -530,15 +526,12 @@
             text-align: center;
             border: 1px solid transparent;
             transition: 0.3s;
-            flex: 1; /* Stretch to fill */
-            min-width: 0; /* Prevent overflow */
+            flex: 1; min-width: 0;
         }
         .stat-box:hover { border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); }
-        
         .stat-label-sub { font-size: 10px; color: var(--text-sec); margin-bottom: 4px; display: block; }
         .stat-val-sub { font-size: 13px; font-weight: bold; color: #eee; font-family: monospace; }
 
-        /* 更新动画 */
         @keyframes pulseSuccess {
             0% { box-shadow: 0 0 0 rgba(49, 194, 124, 0); border-color: rgba(255,255,255,0.1); }
             50% { box-shadow: 0 0 20px rgba(49, 194, 124, 0.25); border-color: var(--success); }
@@ -547,24 +540,13 @@
         .stats-dashboard.updated { animation: pulseSuccess 0.8s ease; }
 
 
-        /* --- 通用 模态框样式 (全屏毛玻璃) --- */
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-content {
             background: rgba(25, 25, 35, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -576,14 +558,9 @@
             transition: transform 0.3s ease;
             max-width: 400px;
             width: 90%;
-            position: relative; /* Fixed: 确保内部绝对定位元素相对于此容器定位 */
+            position: relative; 
         }
-        /* 特别优化天气模态框居中，移除 inline styles 影响 */
-        #locModal .modal-content {
-            max-width: 350px;
-            width: 90%;
-            margin: 0; /* Ensure automatic margins help flexbox centering if needed */
-        }
+        #locModal .modal-content { max-width: 350px; width: 90%; margin: 0; }
 
         .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-content h2, .modal-content h3 { margin-bottom: 15px; color: var(--primary); justify-content: center; }
@@ -595,15 +572,13 @@
             border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff;
         }
 
-        /* 模拟进度环光效 */
         .timer-circle::after {
             content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
             border-radius: 50%; border: 5px solid transparent; border-top-color: var(--accent);
             animation: spin 2s linear infinite;
-            display: none; /* 运行时显示 */
+            display: none; 
         }
         .timer-circle.active::after { display: block; }
-        
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .time-display { font-size: 42px; font-weight: 700; font-family: monospace; }
@@ -618,10 +593,9 @@
         .btn-sec { background: rgba(255,255,255,0.1); color: #fff; }
         .btn-sec:hover { background: rgba(255,255,255,0.2); }
 
-        /* --- 3. 主内容 (ToDo) 增强版 --- */
+        /* --- 3. 主内容 (ToDo) --- */
         .main-content { grid-area: main; }
         
-        /* 标签页 */
         .tabs { display: flex; gap: 5px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; }
         .tab-btn {
             flex: 1; text-align: center; padding: 10px; cursor: pointer;
@@ -629,7 +603,6 @@
         }
         .tab-btn.active { background: rgba(255,255,255,0.1); color: var(--text-main); font-weight: bold; }
 
-        /* 任务输入区 */
         .task-input-container {
             background: rgba(0,0,0,0.2);
             padding: 15px;
@@ -652,30 +625,19 @@
         .task-input-container input[type="number"] {
             background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
             padding: 10px; border-radius: 10px; color: #fff; font-size: 12px;
-            color-scheme: dark; /* 适配暗色日历控件 */
+            color-scheme: dark; 
         }
         
-        /* 修复 Select 下拉选项背景色问题 */
-        .task-input-container select option {
-            background-color: #24243e; /* 深色背景 */
-            color: #fff;
-        }
+        .task-input-container select option { background-color: #24243e; color: #fff; }
+        #contributionInput { width: 80px; display: none; }
         
-        #contributionInput {
-            width: 80px; display: none; /* 默认隐藏 */
-        }
-        
-        /* 每日任务样式 (New) */
         .daily-checkbox-wrapper {
             display: flex; align-items: center; gap: 5px;
             font-size: 12px; color: var(--text-sec);
             cursor: pointer; user-select: none;
             margin-left: 8px;
         }
-        .daily-checkbox-wrapper input {
-            width: 16px; height: 16px; accent-color: var(--warning);
-            margin: 0;
-        }
+        .daily-checkbox-wrapper input { width: 16px; height: 16px; accent-color: var(--warning); margin: 0; }
         .daily-badge {
             font-size: 10px; 
             background: rgba(255, 191, 0, 0.15); 
@@ -686,7 +648,6 @@
             display: inline-flex; align-items: center; gap: 3px;
         }
 
-        /* 列表项 */
         .todo-list { list-style: none; max-height: 500px; overflow-y: auto; padding-right: 5px; }
         .todo-list::-webkit-scrollbar { width: 4px; }
         .todo-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
@@ -695,8 +656,7 @@
             background: rgba(255,255,255,0.02); margin-bottom: 10px; padding: 15px;
             border-radius: 10px; transition: 0.2s; border-left: 3px solid transparent;
             display: flex; flex-direction: column;
-            cursor: move; /* 拖拽手势 */
-            user-select: none; /* 防止文字选择 */
+            cursor: move; user-select: none;
         }
         .todo-item:hover { background: rgba(255,255,255,0.05); border-left-color: var(--primary); }
         .todo-item.dragging {
@@ -704,13 +664,11 @@
             background: rgba(0, 242, 234, 0.1);
             border: 2px dashed var(--primary);
         }
-        /* 拖拽时，子元素的指针事件需要保留以便交互，但不要干扰拖拽起始 */
         .todo-item * { pointer-events: none; }
         .todo-item input, .todo-item button, .todo-item .action-btn { pointer-events: auto; }
         
         .item-main { display: flex; align-items: center; width: 100%; position: relative;}
 
-        /* 自定义Checkbox */
         .custom-checkbox {
             appearance: none; width: 20px; height: 20px; min-width: 20px;
             border: 2px solid var(--text-sec); border-radius: 6px; margin-right: 15px;
@@ -724,11 +682,7 @@
         .todo-text { flex: 1; transition: 0.3s; font-size: 15px; line-height: 1.4; padding-right: 10px;}
         .todo-item.done .todo-text { text-decoration: line-through; color: var(--text-sec); opacity: 0.6; }
         
-        /* 按钮组 */
-        .item-actions {
-            display: flex; align-items: center; gap: 8px;
-        }
-
+        .item-actions { display: flex; align-items: center; gap: 8px; }
         .action-btn {
             color: var(--text-sec); cursor: pointer; opacity: 0; transition: 0.3s;
             font-size: 18px; display: flex; align-items: center; justify-content: center;
@@ -750,24 +704,21 @@
             background: var(--primary); color: #000;
             animation: pulse 1.5s infinite;
         }
-        .task-timer-display {
-            font-size: 11px; font-family: monospace; color: var(--text-sec); margin-right: 8px;
-        }
+        .task-timer-display { font-size: 11px; font-family: monospace; color: var(--text-sec); margin-right: 8px; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
         
         .todo-item:hover .action-btn { opacity: 1; }
 
-        /* 增强功能：进度条与 Deadline */
         .item-meta { 
             display: flex; align-items: center; justify-content: space-between; 
             margin-top: 8px; font-size: 11px; color: var(--text-sec); 
-            padding-left: 35px; /* 对齐文本 */
+            padding-left: 35px; 
         }
         
         .progress-container {
             flex: 1; height: 6px; background: rgba(255,255,255,0.1); 
             border-radius: 3px; margin-right: 15px; overflow: hidden;
-            display: none; /* 默认隐藏，有子任务时显示 */
+            display: none; 
         }
         .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s ease; }
         .has-progress .progress-container { display: block; }
@@ -803,7 +754,6 @@
             position: relative; display: flex; align-items: center; justify-content: center;
         }
         .vinyl-inner { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; }
-        /* 唱片旋转动画 */
         .vinyl-record.playing { animation: spinRecord 4s linear infinite; }
         @keyframes spinRecord { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -813,287 +763,121 @@
             font-size: 14px; font-weight: bold; margin-top: 10px;
         }
 
-        /* 微博热搜 (通用化为热点资讯) */
         .trend-list { list-style: none; }
         .trend-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .trend-item:last-child { border: none; }
-        .trend-rank { 
-            color: var(--accent); font-weight: bold; font-style: italic; margin-right: 10px; width: 20px;
-        }
+        .trend-rank { color: var(--accent); font-weight: bold; font-style: italic; margin-right: 10px; width: 20px; }
         .trend-link { color: var(--text-main); text-decoration: none; font-size: 14px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .trend-link:hover { color: var(--primary); }
         .trend-score { font-size: 12px; color: var(--text-sec); }
 
-        /* 热榜 Tabs 样式 */
         .trend-tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 10px;
-            overflow-x: auto;
-            padding-bottom: 5px;
+            display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px;
         }
         .trend-tabs::-webkit-scrollbar { height: 3px; }
         .trend-tabs::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
 
         .trend-tab-btn {
-            background: rgba(255,255,255,0.1);
-            color: var(--text-sec);
-            border: none;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: 0.2s;
+            background: rgba(255,255,255,0.1); color: var(--text-sec); border: none; padding: 4px 10px;
+            border-radius: 12px; font-size: 11px; cursor: pointer; white-space: nowrap; transition: 0.2s;
         }
         .trend-tab-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
-        .trend-tab-btn.active {
-            background: var(--primary);
-            color: #000;
-            font-weight: bold;
-        }
+        .trend-tab-btn.active { background: var(--primary); color: #000; font-weight: bold; }
 
-        /* --- 灵感与娱乐 (原推荐阅读) 样式 --- */
         .saying-text {
-            font-size: 16px;
-            line-height: 1.6;
-            font-style: italic;
-            text-align: center;
-            color: #fff;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 0;
-            opacity: 0.9;
+            font-size: 16px; line-height: 1.6; font-style: italic; text-align: center; color: #fff;
+            min-height: 80px; display: flex; align-items: center; justify-content: center; padding: 10px 0; opacity: 0.9;
         }
         
         .answer-text {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 18px;
-            color: var(--primary);
-            font-weight: bold;
-            min-height: 30px;
-            animation: fadeIn 0.5s;
-            text-shadow: 0 0 10px rgba(0, 242, 234, 0.3);
+            margin-top: 15px; text-align: center; font-size: 18px; color: var(--primary); font-weight: bold;
+            min-height: 30px; animation: fadeIn 0.5s; text-shadow: 0 0 10px rgba(0, 242, 234, 0.3);
         }
 
-        /* --- 答案之书美化 (New) --- */
-        .answer-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 15px; /* 增加间距 */
-            margin-bottom: 15px;
-        }
-
+        .answer-wrapper { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
         .answer-input {
-            width: 100%;
-            padding: 12px 20px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 30px; /* 大圆角 */
-            color: #fff;
-            font-size: 14px;
-            text-align: center;
-            transition: all 0.3s ease;
+            width: 100%; padding: 12px 20px; background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 30px; 
+            color: #fff; font-size: 14px; text-align: center; transition: all 0.3s ease;
         }
-
         .answer-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(0, 242, 234, 0.3); /* 聚焦光晕 */
-            background: rgba(0, 0, 0, 0.6);
+            border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 234, 0.3); background: rgba(0, 0, 0, 0.6);
         }
-
         .answer-btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 30px; /* 大圆角 */
-            border: none;
+            width: 100%; padding: 12px; border-radius: 30px; border: none;
             background: linear-gradient(90deg, var(--primary), #269e63);
-            color: #000;
-            font-weight: bold;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            color: #000; font-weight: bold; font-size: 15px; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
             box-shadow: 0 4px 15px rgba(0, 242, 234, 0.2);
         }
+        .answer-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 242, 234, 0.4); filter: brightness(1.1); }
 
-        .answer-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 242, 234, 0.4);
-            filter: brightness(1.1);
-        }
-
-        /* --- 设置浮动按钮 --- */
         .settings-fab {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s;
-            z-index: 999;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer;
+            backdrop-filter: blur(5px); transition: all 0.3s; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .settings-fab:hover {
-            transform: rotate(90deg) scale(1.1);
-            background: var(--primary);
-            color: #000;
-        }
+        .settings-fab:hover { transform: rotate(90deg) scale(1.1); background: var(--primary); color: #000; }
 
-        /* --- 每日新闻摘要浮动按钮 (New) --- */
         .news-fab {
-            position: fixed;
-            bottom: 90px; /* 位于设置按钮上方 */
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s;
-            z-index: 999;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: fixed; bottom: 90px; right: 30px; width: 50px; height: 50px; border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer;
+            backdrop-filter: blur(5px); transition: all 0.3s; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .news-fab:hover {
-            transform: scale(1.1);
-            background: var(--primary);
-            color: #000;
-        }
+        .news-fab:hover { transform: scale(1.1); background: var(--primary); color: #000; }
         .news-badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 12px;
-            height: 12px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            border: 2px solid rgba(0,0,0,0.4);
-            display: none; /* JS toggles this */
-            animation: pulseRed 2s infinite;
+            position: absolute; top: 0; right: 0; width: 12px; height: 12px; background-color: var(--accent);
+            border-radius: 50%; border: 2px solid rgba(0,0,0,0.4); display: none; animation: pulseRed 2s infinite;
         }
         .news-badge.show { display: block; }
 
-        /* --- 新闻摘要模态框样式 --- */
         #newsSummaryModal .modal-content {
-            padding: 20px;
-            max-width: 600px;
-            width: 95%;
-            height: 80vh; /* 固定高度允许内部滚动 */
-            display: flex;
-            flex-direction: column;
+            padding: 20px; max-width: 600px; width: 95%; height: 80vh; display: flex; flex-direction: column;
         }
         .news-image-container {
-            flex: 1;
-            overflow-y: auto;
-            border-radius: 10px;
-            margin-top: 10px;
-            background: rgba(0,0,0,0.3);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 200px;
+            flex: 1; overflow-y: auto; border-radius: 10px; margin-top: 10px;
+            background: rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: flex-start; min-height: 200px;
         }
-        .news-image-container img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-        }
-        .loading-text {
-            color: var(--text-sec);
-            margin-top: 50px;
-            text-align: center;
-        }
+        .news-image-container img { max-width: 100%; height: auto; display: block; }
+        .loading-text { color: var(--text-sec); margin-top: 50px; text-align: center; }
 
-        /* --- 设置模态框 (增强版) --- */
         #configModal .modal-content {
-            max-width: 800px;
-            width: 90%;
-            padding: 0; /* 自定义布局 */
-            display: flex;
-            height: 500px;
-            overflow: hidden;
-            text-align: left;
+            max-width: 800px; width: 90%; padding: 0; display: flex; height: 500px; overflow: hidden; text-align: left;
         }
-
         .config-sidebar {
-            width: 200px;
-            background: rgba(0,0,0,0.2);
-            border-right: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-            overflow-y: auto;
+            width: 200px; background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto;
         }
         .config-tab {
-            padding: 15px 20px;
-            color: var(--text-sec);
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding: 15px 20px; color: var(--text-sec); cursor: pointer; transition: 0.2s; font-size: 14px;
+            display: flex; align-items: center; gap: 10px;
         }
         .config-tab:hover, .config-tab.active {
-            background: rgba(255,255,255,0.05);
-            color: var(--primary);
-            border-left: 3px solid var(--primary);
+            background: rgba(255,255,255,0.05); color: var(--primary); border-left: 3px solid var(--primary);
         }
         .config-tab.active { font-weight: bold; }
 
-        .config-main {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            position: relative;
-        }
+        .config-main { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
         .config-section { display: none; }
         .config-section.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .config-header {
             font-size: 20px; font-weight: bold; margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;
-            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; color: #fff;
         }
 
-        /* 开关样式 */
         .toggle-row {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.02);
-            border-radius: 8px;
+            margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 8px;
         }
         .toggle-label { font-size: 14px; }
-        
-        .switch {
-            position: relative; display: inline-block; width: 40px; height: 20px;
-        }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
@@ -1107,35 +891,218 @@
         input:checked + .slider:before { transform: translateX(20px); }
 
         .close-config-btn {
-            position: absolute; top: 15px; right: 20px;
-            background: none; border: none; color: var(--text-sec);
-            font-size: 24px; cursor: pointer; z-index: 1001; /* 提高层级 */
+            position: absolute; top: 15px; right: 20px; background: none; border: none;
+            color: var(--text-sec); font-size: 24px; cursor: pointer; z-index: 1001; 
         }
         .close-config-btn:hover { color: #fff; }
 
-        /* 热榜源选择样式 */
         .source-group { margin-bottom: 20px; }
-        .source-group-title { font-size: 13px; color: var(--primary); margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .source-group-title {
+            font-size: 13px; color: var(--primary); margin-bottom: 10px;
+            border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px;
+        }
         .source-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .source-item {
             display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-sec); cursor: pointer;
-            padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; transition: 0.2s;
-            border: 1px solid transparent;
+            padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; transition: 0.2s; border: 1px solid transparent;
         }
         .source-item:hover { background: rgba(255,255,255,0.1); }
         .source-item.selected { border-color: var(--primary); color: #fff; background: rgba(0,242,234,0.05); }
         .source-item input { display: none; }
         .source-limit-tip { font-size: 12px; color: var(--warning); margin-bottom: 15px; }
 
-        /* 隐藏模块通用类 */
-        .module-hidden { display: none !important; }
+        /* --- 下滑提示 --- */
+        .scroll-down-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-sec);
+            font-size: 12px;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+            z-index: 5;
+            transition: color 0.3s;
+        }
+        .scroll-down-indicator:hover { color: var(--primary); }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-10px) translateX(-50%); }
+            60% { transform: translateY(-5px) translateX(-50%); }
+        }
 
-        /* 位置设置模态框特别优化 */
-        #locModal .modal-content {
-            max-width: 350px;
-            width: 90%;
-            /* 移除可能导致偏移的 margin: auto */
-            margin: 0; 
+        /* --- 个人导航页样式 (NEW) --- */
+        .nav-page-section {
+            min-height: 100vh;
+            /* 背景稍微加深一点，区分第一屏 */
+            background: rgba(0, 0, 0, 0.2);
+            padding: 80px 20px;
+            position: relative;
+        }
+
+        .nav-layout {
+            max-width: 1300px; /* 增加最大宽度 */
+            margin: 0 auto;
+            display: flex;
+            gap: 60px; /* 增加间距，使侧边栏右移 */
+            align-items: flex-start;
+            padding-right: 20px;
+        }
+
+        .nav-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 50px;
+        }
+
+        .nav-sidebar {
+            width: 220px;
+            position: sticky;
+            top: 80px; /* 调整顶部吸附距离 */
+            height: fit-content;
+            padding-left: 20px; /* 增加左侧内边距 */
+        }
+
+        .nav-group {
+            /* 增加滚动偏移量，防止标题被顶部遮挡 */
+            scroll-margin-top: 40px;
+        }
+
+        .nav-section-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-section-header::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, rgba(255,255,255,0.1), transparent);
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .nav-link-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop);
+            border: var(--glass-border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .nav-icon-box {
+            width: 44px;
+            height: 44px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--primary);
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+
+        .nav-link-card:hover .nav-icon-box {
+            background: var(--primary);
+            color: #000;
+            transform: rotate(-10deg);
+        }
+
+        .nav-link-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .nav-link-title {
+            color: #fff;
+            font-weight: 600;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-link-desc {
+            color: var(--text-sec);
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 侧边导航目录 */
+        .nav-toc {
+            list-style: none;
+            border-left: 2px solid rgba(255,255,255,0.05);
+            padding-left: 25px; /* 增加列表左内边距 */
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* 增加条目间距 */
+        }
+        .nav-toc-item {
+            position: relative;
+        }
+        .nav-toc-link {
+            color: var(--text-sec);
+            text-decoration: none;
+            font-size: 16px; /* 增大基础字体 */
+            transition: 0.3s;
+            display: block;
+            cursor: pointer;
+            line-height: 1.5;
+        }
+        
+        .nav-toc-link:hover, .nav-toc-link.active {
+            color: var(--primary);
+            font-weight: 600;
+            transform: translateX(5px);
+            font-size: 18px; /* 激活时字体更大 */
+        }
+
+        .nav-toc-link.active::before {
+            content: '';
+            position: absolute;
+            left: -27px; /* 调整指示条位置 */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px; /* 加粗指示条 */
+            height: 18px;
+            background: var(--primary);
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--primary);
         }
 
     </style>
@@ -1145,6 +1112,231 @@
     <!-- 背景装饰 -->
     <div class="bg-blob blob-1"></div>
     <div class="bg-blob blob-2"></div>
+
+    <!-- 1. 仪表盘屏幕 -->
+    <section class="screen-dashboard">
+        <div class="container">
+            <!-- Header -->
+            <div class="card header" id="headerCard">
+                <div class="clock-box" id="clockCard">
+                    <h1 id="clock">00:00</h1>
+                    <p id="date">LOADING...</p>
+                    <p id="lunarDate" style="font-size: 12px; color: var(--primary); margin-top: 2px; opacity: 0.8; display: none;">农历加载中...</p>
+                </div>
+                
+                <div class="search-box-wrapper" id="searchCard">
+                    <div class="search-container" id="searchContainer">
+                        <button class="search-trigger" onclick="toggleSearch()" title="搜索">
+                            <i class="ph-bold ph-magnifying-glass"></i>
+                        </button>
+                        <div class="search-content">
+                            <select id="searchEngine" class="search-select">
+                                <option value="bing">Bing</option>
+                                <option value="google">Google</option>
+                                <option value="scholar">学术</option>
+                            </select>
+                            <div class="search-divider"></div>
+                            <input type="text" id="searchInput" class="search-input" placeholder="输入关键词搜索..." onkeypress="handleSearchEnter(event)">
+                            <button class="search-go" onclick="doSearch()">
+                                <i class="ph-bold ph-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="weather-wrapper" id="weatherCard">
+                    <!-- 天气显示区域 -->
+                    <div class="weather-box" onclick="openLocModal()">
+                        <div class="weather-icon-box" id="w-icon">
+                            <i class="ph ph-cloud"></i> <!-- 默认图标 -->
+                        </div>
+                        <div class="weather-info-col">
+                            <div class="temp-row">
+                                <span id="w-temp">--</span><span class="unit">°C</span>
+                            </div>
+                            <div class="loc-row">
+                                <i class="ph-fill ph-map-pin"></i>
+                                <span id="w-city">加载中...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 出行建议条 -->
+                    <div class="weather-tip" id="w-tip">
+                        <i class="ph-fill ph-sparkle"></i> 正在连接高德天气...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="card" id="shortcutsCard">
+                    <h3>
+                        <span class="title-text">⚡ 快速访问</span>
+                        <button class="header-btn" onclick="toggleShortcutEditMode()" title="编辑模式"><i class="ph-fill ph-gear"></i></button>
+                    </h3>
+                    <div class="shortcuts-grid" id="shortcutsGrid">
+                        <!-- JS 渲染 -->
+                    </div>
+                </div>
+
+                <div class="card pomodoro-container" id="pomoCard">
+                    <h3><span class="title-text">⏳ 专注时刻</span></h3>
+
+                    <!-- 倒计时圆环 -->
+                    <div class="timer-circle" id="pomoCircle">
+                        <div class="time-display" id="timer">25:00</div>
+                    </div>
+                
+                    <!-- 自定义时长设置区域 -->
+                    <div class="timer-settings" id="timerSettings">
+                        <span class="setting-label">设置时长(分):</span>
+                        <input type="number" id="customMinutes" value="25" min="1" max="120" onchange="updateCustomTime()" oninput="updateCustomTime()">
+                    </div>
+                
+                    <!-- 控制按钮 -->
+                    <div class="pomo-controls">
+                        <button class="btn-primary" id="startBtn" onclick="toggleTimer()">START</button>
+                        <button class="btn-sec" onclick="resetTimer()">RESET</button>
+                    </div>
+
+                    <!-- 专注数据仪表盘 (新) -->
+                    <div class="stats-dashboard" id="statsDashboard">
+                        <!-- 今日专注 (主) -->
+                        <div class="stat-main" id="statContainer-today">
+                            <div class="stat-main-header">
+                                <span><i class="ph-fill ph-target"></i> 今日专注</span>
+                                <button class="edit-stat-btn" onclick="openStatModal()" title="手动修改今日时长">
+                                    <i class="ph-bold ph-pencil-simple"></i>
+                                </button>
+                            </div>
+                            <div class="stat-main-val" id="statToday">0h 00m</div>
+                        </div>
+                        
+                        <!-- 历史数据网格 (副) -->
+                        <div class="stat-grid-sub" id="statGridSub">
+                            <div class="stat-box" id="statContainer-month">
+                                <span class="stat-label-sub">本月</span>
+                                <div class="stat-val-sub" id="statMonth">0h</div>
+                            </div>
+                            <div class="stat-box" id="statContainer-year">
+                                <span class="stat-label-sub">本年</span>
+                                <div class="stat-val-sub" id="statYear">0h</div>
+                            </div>
+                            <div class="stat-box" id="statContainer-total">
+                                <span class="stat-label-sub">总计</span>
+                                <div class="stat-val-sub" id="statTotal">0h</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main -->
+            <div class="main-content" id="todoCard">
+                <div class="card" style="min-height: 100%;">
+                    <h3><span class="title-text">📝 任务计划</span></h3>
+                    <div class="tabs">
+                        <div class="tab-btn active" onclick="switchTab('todo')">待办事项</div>
+                        <div class="tab-btn" onclick="switchTab('day')">今日计划</div>
+                        <div class="tab-btn" onclick="switchTab('week')">本周目标</div>
+                    </div>
+                    
+                    <div class="task-input-container">
+                        <div class="input-row">
+                            <input type="text" id="todoInput" placeholder="输入任务内容..." onkeypress="handleEnter(event)">
+                            <button class="btn-primary" onclick="addTodo()">+</button>
+                        </div>
+                        <div class="input-row" style="align-items: center;">
+                            <input type="datetime-local" id="deadlineInput" title="截止时间" placeholder="截止时间">
+                            <select id="parentSelect" style="flex: 1; max-width: 150px;" onchange="toggleContributionInput()">
+                                <option value="">无关联目标</option>
+                                <!-- JS 动态填充 -->
+                            </select>
+                            <input type="number" id="contributionInput" placeholder="占比%" min="1" max="100" title="完成该任务可为父任务增加多少百分比进度">
+                            
+                            <!-- 每日任务勾选 (New) -->
+                            <label class="daily-checkbox-wrapper" title="开启后每天自动重置并保留在今日列表">
+                                <input type="checkbox" id="isDailyInput"> 📅 每日
+                            </label>
+                        </div>
+                    </div>
+
+                    <ul class="todo-list" id="todoList" ondragover="handleDragOver(event)">
+                        <!-- JS 生成 -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Extra -->
+            <div class="extra-content">
+                <div class="card music-card" id="musicCard">
+                    <h3><span class="title-text">🎧 QQ 音乐</span></h3>
+                    <div class="vinyl-record" id="vinyl">
+                        <div class="vinyl-inner"></div>
+                    </div>
+                    <p style="font-size:12px; color:#aaa; margin-bottom:10px;">沉浸式聆听</p>
+                    <a href="https://y.qq.com/" target="_blank" class="music-link" onclick="startVinyl()">前往播放器</a>
+                </div>
+
+                <div class="card" id="weiboCard">
+                    <h3><span class="title-text">🔥 实时热榜</span></h3>
+                    <div class="trend-tabs" id="trendTabs">
+                        <!-- JS 生成 -->
+                    </div>
+                    <ul class="trend-list" id="newsList">
+                        <!-- JS 生成 -->
+                    </ul>
+                    <div id="newsUpdate" style="text-align: right; font-size: 10px; color: var(--text-sec); margin-top: 10px;"></div>
+                </div>
+
+                <div class="card" id="newsCard">
+                    <h3>
+                        <span class="title-text" id="inspirationTitle">💡 每日灵感</span> 
+                        <button class="header-btn" onclick="refreshInspiration()" title="刷新"><i class="ph-bold ph-arrows-clockwise"></i></button>
+                    </h3>
+                    
+                    <!-- 随机名言模式 -->
+                    <div id="sayingContainer" style="display:none;">
+                        <p id="sayingText" class="saying-text">正在获取灵感...</p>
+                    </div>
+
+                    <!-- 答案之书模式 -->
+                    <div id="answerBookContainer" style="display:none;">
+                        <div class="answer-wrapper">
+                            <input type="text" id="answerQuestion" class="answer-input" placeholder="默念问题，点击指引..." onkeypress="handleAnswerKey(event)">
+                            <button class="answer-btn" onclick="askAnswerBook()">
+                                <i class="ph-bold ph-crystal-ball"></i> 寻求指引
+                            </button>
+                        </div>
+                        <div id="answerResult" class="answer-text"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下滑探索指示器 -->
+        <div class="scroll-down-indicator" onclick="document.getElementById('nav-page').scrollIntoView({behavior: 'smooth'})">
+            <span>下滑探索导航页</span>
+            <i class="ph-bold ph-caret-double-down"></i>
+        </div>
+    </section>
+
+    <!-- 2. 个人导航页屏幕 -->
+    <section id="nav-page" class="nav-page-section">
+        <div class="nav-layout">
+            <div class="nav-main" id="nav-content-container">
+                <!-- 动态渲染导航内容 -->
+            </div>
+            
+            <aside class="nav-sidebar">
+                <div style="color: #fff; font-weight: bold; margin-bottom: 20px; font-size: 16px; padding-left: 20px;">目录索引</div>
+                <ul class="nav-toc" id="nav-toc">
+                    <!-- 动态渲染目录 -->
+                </ul>
+            </aside>
+        </div>
+    </section>
+
 
     <!-- 新闻摘要入口按钮 -->
     <button class="news-fab" onclick="openNewsModal()" title="每日新闻摘要">
@@ -1156,273 +1348,69 @@
     <button class="settings-fab" onclick="openConfigModal()" title="全局设置">
         <i class="ph-bold ph-gear"></i>
     </button>
+    
+    <!-- 快捷方式 添加/编辑 模态框 -->
+    <div id="shortcutModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px;">
+            <h3 id="shortcutModalTitle">🔗 添加快捷方式</h3>
+            <div class="input-group">
+                <input type="text" id="scTitle" placeholder="名称 (如: 百度)">
+                <input type="text" id="scUrl" placeholder="网址 (如: https://...)">
+            </div>
+            <button class="btn-primary" onclick="saveShortcut()" style="width: 100%">保存</button>
+            <button class="btn-sec" onclick="closeShortcutModal()" style="margin-top: 10px; width: 100%">取消</button>
+        </div>
+    </div>
 
-    <div class="container">
-        
-        <!-- 1. 顶部Header -->
-        <div class="card header" id="headerCard">
-            <div class="clock-box" id="clockCard">
-                <h1 id="clock">00:00</h1>
-                <p id="date">LOADING...</p>
-                <!-- 农历显示 -->
-                <p id="lunarDate" style="font-size: 12px; color: var(--primary); margin-top: 2px; opacity: 0.8; display: none;">农历加载中...</p>
+    <!-- 时间到的提示模态框 -->
+    <div id="alarmModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>🎉 专注完成！</h2>
+            <p>太棒了，你刚刚完成了一个专注时段。</p>
+            <p>站起来喝杯水，休息一下吧。</p>
+            <button class="btn-primary" onclick="closeModal()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 专注时长修改模态框 -->
+    <div id="statModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 300px;">
+            <h3>✏️ 修改今日时长</h3>
+            <p style="font-size:12px; color:#aaa;">输入今日已专注的总分钟数</p>
+            <input type="number" id="manualStatInput" placeholder="分钟" style="width:100%; padding:10px; margin:10px 0; background:rgba(0,0,0,0.3); border:1px solid #444; color:#fff; border-radius:8px; text-align:center; font-size:18px;">
+            <button class="btn-primary" onclick="saveManualStat()" style="width:100%">保存修改</button>
+            <button class="btn-sec" onclick="closeStatModal()" style="margin-top:10px; width:100%">取消</button>
+        </div>
+    </div>
+
+    <!-- 任务编辑模态框 (NEW) -->
+    <div id="taskEditModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: left;">
+            <h3>📝 编辑任务</h3>
+            <div class="input-group">
+                <label style="font-size:12px; color:#aaa;">任务内容</label>
+                <input type="text" id="editTaskText">
+            </div>
+            <div class="input-group">
+                <label style="font-size:12px; color:#aaa;">截止时间</label>
+                <input type="datetime-local" id="editTaskDeadline">
+            </div>
+            <div class="input-group" id="editContributionGroup">
+                <label style="font-size:12px; color:#aaa;">进度占比 (%)</label>
+                <input type="number" id="editTaskContribution" min="0" max="100">
+            </div>
+            <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px;">
+                <input type="checkbox" id="editTaskDaily" style="width: auto;">
+                <label for="editTaskDaily" style="font-size:14px; color:#fff; cursor: pointer;">设为每日任务</label>
             </div>
             
-            <!-- 搜索模块 -->
-            <div class="search-box-wrapper" id="searchCard">
-                <div class="search-container" id="searchContainer">
-                    <button class="search-trigger" onclick="toggleSearch()" title="搜索">
-                        <i class="ph-bold ph-magnifying-glass"></i>
-                    </button>
-                    <div class="search-content">
-                        <select id="searchEngine" class="search-select">
-                            <option value="bing">Bing</option>
-                            <option value="google">Google</option>
-                            <option value="scholar">学术</option>
-                        </select>
-                        <div class="search-divider"></div>
-                        <input type="text" id="searchInput" class="search-input" placeholder="输入关键词搜索..." onkeypress="handleSearchEnter(event)">
-                        <button class="search-go" onclick="doSearch()">
-                            <i class="ph-bold ph-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="weather-wrapper" id="weatherCard">
-                <!-- 天气显示区域 -->
-                <div class="weather-box" onclick="openLocModal()">
-                    <div class="weather-icon-box" id="w-icon">
-                        <i class="ph ph-cloud"></i> <!-- 默认图标 -->
-                    </div>
-                    <div class="weather-info-col">
-                        <div class="temp-row">
-                            <span id="w-temp">--</span><span class="unit">°C</span>
-                        </div>
-                        <div class="loc-row">
-                            <i class="ph-fill ph-map-pin"></i>
-                            <span id="w-city">加载中...</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- 出行建议条 -->
-                <div class="weather-tip" id="w-tip">
-                    <i class="ph-fill ph-sparkle"></i> 正在连接高德天气...
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. 左侧栏 -->
-        <div class="sidebar">
-            <div class="card" id="shortcutsCard">
-                <h3>
-                    <span class="title-text">⚡ 快速访问</span>
-                    <button class="header-btn" onclick="toggleShortcutEditMode()" title="编辑模式"><i class="ph-fill ph-gear"></i></button>
-                </h3>
-                <div class="shortcuts-grid" id="shortcutsGrid">
-                    <!-- JS 渲染 -->
-                </div>
-            </div>
-
-            <!-- 快捷方式 添加/编辑 模态框 -->
-            <div id="shortcutModal" class="modal-overlay">
-                <div class="modal-content" style="max-width: 350px;">
-                    <h3 id="shortcutModalTitle">🔗 添加快捷方式</h3>
-                    <div class="input-group">
-                        <input type="text" id="scTitle" placeholder="名称 (如: 百度)">
-                        <input type="text" id="scUrl" placeholder="网址 (如: https://...)">
-                    </div>
-                    <button class="btn-primary" onclick="saveShortcut()" style="width: 100%">保存</button>
-                    <button class="btn-sec" onclick="closeShortcutModal()" style="margin-top: 10px; width: 100%">取消</button>
-                </div>
-            </div>
-
-            <div class="card pomodoro-container" id="pomoCard">
-                <h3><span class="title-text">⏳ 专注时刻</span></h3>
-
-                <!-- 倒计时圆环 -->
-                <div class="timer-circle" id="pomoCircle">
-                    <div class="time-display" id="timer">25:00</div>
-                </div>
+            <input type="hidden" id="editTaskId">
             
-                <!-- 自定义时长设置区域 -->
-                <div class="timer-settings" id="timerSettings">
-                    <span class="setting-label">设置时长(分):</span>
-                    <input type="number" id="customMinutes" value="25" min="1" max="120" onchange="updateCustomTime()" oninput="updateCustomTime()">
-                </div>
-            
-                <!-- 控制按钮 -->
-                <div class="pomo-controls">
-                    <button class="btn-primary" id="startBtn" onclick="toggleTimer()">START</button>
-                    <button class="btn-sec" onclick="resetTimer()">RESET</button>
-                </div>
-
-                <!-- 专注数据仪表盘 (新) -->
-                <div class="stats-dashboard" id="statsDashboard">
-                    <!-- 今日专注 (主) -->
-                    <div class="stat-main" id="statContainer-today">
-                        <div class="stat-main-header">
-                            <span><i class="ph-fill ph-target"></i> 今日专注</span>
-                            <button class="edit-stat-btn" onclick="openStatModal()" title="手动修改今日时长">
-                                <i class="ph-bold ph-pencil-simple"></i>
-                            </button>
-                        </div>
-                        <div class="stat-main-val" id="statToday">0h 00m</div>
-                    </div>
-                    
-                    <!-- 历史数据网格 (副) -->
-                    <div class="stat-grid-sub" id="statGridSub">
-                        <div class="stat-box" id="statContainer-month">
-                            <span class="stat-label-sub">本月</span>
-                            <div class="stat-val-sub" id="statMonth">0h</div>
-                        </div>
-                        <div class="stat-box" id="statContainer-year">
-                            <span class="stat-label-sub">本年</span>
-                            <div class="stat-val-sub" id="statYear">0h</div>
-                        </div>
-                        <div class="stat-box" id="statContainer-total">
-                            <span class="stat-label-sub">总计</span>
-                            <div class="stat-val-sub" id="statTotal">0h</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 时间到的提示模态框 -->
-            <div id="alarmModal" class="modal-overlay">
-                <div class="modal-content">
-                    <h2>🎉 专注完成！</h2>
-                    <p>太棒了，你刚刚完成了一个专注时段。</p>
-                    <p>站起来喝杯水，休息一下吧。</p>
-                    <button class="btn-primary" onclick="closeModal()">我知道了</button>
-                </div>
-            </div>
-
-            <!-- 专注时长修改模态框 -->
-            <div id="statModal" class="modal-overlay">
-                <div class="modal-content" style="max-width: 300px;">
-                    <h3>✏️ 修改今日时长</h3>
-                    <p style="font-size:12px; color:#aaa;">输入今日已专注的总分钟数</p>
-                    <input type="number" id="manualStatInput" placeholder="分钟" style="width:100%; padding:10px; margin:10px 0; background:rgba(0,0,0,0.3); border:1px solid #444; color:#fff; border-radius:8px; text-align:center; font-size:18px;">
-                    <button class="btn-primary" onclick="saveManualStat()" style="width:100%">保存修改</button>
-                    <button class="btn-sec" onclick="closeStatModal()" style="margin-top:10px; width:100%">取消</button>
-                </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-primary" style="flex: 1;" onclick="saveTaskEdit()">保存</button>
+                <button class="btn-sec" style="flex: 1;" onclick="closeTaskEditModal()">取消</button>
             </div>
         </div>
-
-        <!-- 3. 中间栏 (ToDo 增强) -->
-        <div class="main-content" id="todoCard">
-            <div class="card" style="min-height: 100%;">
-                <h3><span class="title-text">📝 任务计划</span></h3>
-                <div class="tabs">
-                    <div class="tab-btn active" onclick="switchTab('todo')">待办事项</div>
-                    <div class="tab-btn" onclick="switchTab('day')">今日计划</div>
-                    <div class="tab-btn" onclick="switchTab('week')">本周目标</div>
-                </div>
-                
-                <div class="task-input-container">
-                    <div class="input-row">
-                        <input type="text" id="todoInput" placeholder="输入任务内容..." onkeypress="handleEnter(event)">
-                        <button class="btn-primary" onclick="addTodo()">+</button>
-                    </div>
-                    <div class="input-row" style="align-items: center;">
-                        <input type="datetime-local" id="deadlineInput" title="截止时间" placeholder="截止时间">
-                        <select id="parentSelect" style="flex: 1; max-width: 150px;" onchange="toggleContributionInput()">
-                            <option value="">无关联目标</option>
-                            <!-- JS 动态填充 -->
-                        </select>
-                        <input type="number" id="contributionInput" placeholder="占比%" min="1" max="100" title="完成该任务可为父任务增加多少百分比进度">
-                        
-                        <!-- 每日任务勾选 (New) -->
-                        <label class="daily-checkbox-wrapper" title="开启后每天自动重置并保留在今日列表">
-                            <input type="checkbox" id="isDailyInput"> 📅 每日
-                        </label>
-                    </div>
-                </div>
-
-                <ul class="todo-list" id="todoList" ondragover="handleDragOver(event)">
-                    <!-- JS 生成 -->
-                </ul>
-            </div>
-        </div>
-
-        <!-- 任务编辑模态框 (NEW) -->
-        <div id="taskEditModal" class="modal-overlay">
-            <div class="modal-content" style="max-width: 400px; text-align: left;">
-                <h3>📝 编辑任务</h3>
-                <div class="input-group">
-                    <label style="font-size:12px; color:#aaa;">任务内容</label>
-                    <input type="text" id="editTaskText">
-                </div>
-                <div class="input-group">
-                    <label style="font-size:12px; color:#aaa;">截止时间</label>
-                    <input type="datetime-local" id="editTaskDeadline">
-                </div>
-                <div class="input-group" id="editContributionGroup">
-                    <label style="font-size:12px; color:#aaa;">进度占比 (%)</label>
-                    <input type="number" id="editTaskContribution" min="0" max="100">
-                </div>
-                <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="editTaskDaily" style="width: auto;">
-                    <label for="editTaskDaily" style="font-size:14px; color:#fff; cursor: pointer;">设为每日任务</label>
-                </div>
-                
-                <input type="hidden" id="editTaskId">
-                
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="btn-primary" style="flex: 1;" onclick="saveTaskEdit()">保存</button>
-                    <button class="btn-sec" style="flex: 1;" onclick="closeTaskEditModal()">取消</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. 右侧栏 -->
-        <div class="extra-content">
-            <div class="card music-card" id="musicCard">
-                <h3><span class="title-text">🎧 QQ 音乐</span></h3>
-                <div class="vinyl-record" id="vinyl">
-                    <div class="vinyl-inner"></div>
-                </div>
-                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">沉浸式聆听</p>
-                <a href="https://y.qq.com/" target="_blank" class="music-link" onclick="startVinyl()">前往播放器</a>
-            </div>
-
-            <div class="card" id="weiboCard">
-                <h3><span class="title-text">🔥 实时热榜</span></h3>
-                <div class="trend-tabs" id="trendTabs">
-                    <!-- JS 生成 -->
-                </div>
-                <ul class="trend-list" id="newsList">
-                    <!-- JS 生成 -->
-                </ul>
-                <div id="newsUpdate" style="text-align: right; font-size: 10px; color: var(--text-sec); margin-top: 10px;"></div>
-            </div>
-
-            <!-- 灵感与娱乐模块 (替换原推荐阅读) -->
-            <div class="card" id="newsCard">
-                <h3>
-                    <span class="title-text" id="inspirationTitle">💡 每日灵感</span> 
-                    <button class="header-btn" onclick="refreshInspiration()" title="刷新"><i class="ph-bold ph-arrows-clockwise"></i></button>
-                </h3>
-                
-                <!-- 随机名言模式 -->
-                <div id="sayingContainer" style="display:none;">
-                    <p id="sayingText" class="saying-text">正在获取灵感...</p>
-                </div>
-
-                <!-- 答案之书模式 -->
-                <div id="answerBookContainer" style="display:none;">
-                    <div class="answer-wrapper">
-                        <input type="text" id="answerQuestion" class="answer-input" placeholder="默念问题，点击指引..." onkeypress="handleAnswerKey(event)">
-                        <button class="answer-btn" onclick="askAnswerBook()">
-                            <i class="ph-bold ph-crystal-ball"></i> 寻求指引
-                        </button>
-                    </div>
-                    <div id="answerResult" class="answer-text"></div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <!-- 全局设置模态框 -->
@@ -1617,7 +1605,7 @@
                     <div class="config-header">关于</div>
                     <div style="text-align:center; margin-top:40px;">
                         <h2 style="color:#fff; font-family:'Courier New', monospace;">CyberFocus</h2>
-                        <p style="color:var(--primary); font-size:18px;">v0.6.3</p>
+                        <p style="color:var(--primary); font-size:18px;">v0.7.0</p>
                         <p style="color:#aaa; font-size:12px; margin-top:20px;">Designed for Productivity & Aesthetics.</p>
                     </div>
                 </div>
@@ -1653,7 +1641,128 @@
     </div>
 
 <script>
-    // --- 0. 全局配置逻辑 (NEW) ---
+    // --- 0. 导航数据配置 (可在此轻松维护) ---
+    const navConfig = [
+        {
+            category: "常用工具",
+            icon: "ph-wrench",
+            links: [
+                { title: "Can I use", desc: "前端 API 兼容性查询", url: "https://caniuse.com", icon: "ph-browsers" },
+                { title: "TinyPNG", desc: "智能图片压缩工具", url: "https://tinypng.com", icon: "ph-image" },
+                { title: "开发者武器库", desc: "高效程序员的工具合集", url: "https://devtool.tech", icon: "ph-toolbox" },
+                { title: "在线工具", desc: "程序员的万能工具箱", url: "https://tool.lu", icon: "ph-cube" },
+                { title: "Json 中文网", desc: "在线解析及格式化验证", url: "https://www.json.cn", icon: "ph-brackets-curly" }
+            ]
+        },
+        {
+            category: "AI 导航",
+            icon: "ph-robot",
+            links: [
+                { title: "ChatGPT (最强)", desc: "OpenAI 的核心对话模型", url: "https://chatgpt.com", icon: "ph-chat-circle-dots" },
+                { title: "Notion AI (笔记)", desc: "内置在 Notion 里的写作伴侣", url: "https://www.notion.so", icon: "ph-notebook" },
+                { title: "Midjourney (绘画)", desc: "最顶尖的 AI 艺术生成器", url: "https://www.midjourney.com", icon: "ph-paint-brush-broad" },
+                { title: "Beautiful.ai (PPT)", desc: "智能演示文稿生成平台", url: "https://www.beautiful.ai", icon: "ph-presentation-chart" }
+            ]
+        },
+        {
+            category: "前端框架",
+            icon: "ph-atom",
+            links: [
+                { title: "React", desc: "构建用户界面的 JS 库", url: "https://react.dev", icon: "ph-atom" },
+                { title: "Vue.js", desc: "渐进式 JavaScript 框架", url: "https://vuejs.org", icon: "ph-flower-lotus" },
+                { title: "Next.js", desc: "React 的全栈框架生产环境之选", url: "https://nextjs.org", icon: "ph-lightning" },
+                { title: "Ant Design", desc: "企业级 UI 设计语言和组件库", url: "https://ant.design", icon: "ph-palette" }
+            ]
+        },
+        {
+            category: "摸鱼专用",
+            icon: "ph-coffee",
+            links: [
+                { title: "Bilibili", desc: "国内最火的年轻人文化社区", url: "https://www.bilibili.com", icon: "ph-television" },
+                { title: "知乎", desc: "有问题，上知乎", url: "https://www.zhihu.com", icon: "ph-chat-centered-text" },
+                { title: "微博", desc: "随时随地发现新鲜事", url: "https://weibo.com", icon: "ph-fire" },
+                { title: "mmPlayer", desc: "极简在线音乐播放器", url: "https://music.v-mous.com", icon: "ph-music-note" }
+            ]
+        }
+    ];
+
+    // --- 1. 初始化导航页 ---
+    function renderNav() {
+        const container = document.getElementById('nav-content-container');
+        const toc = document.getElementById('nav-toc');
+        if (!container || !toc) return;
+        
+        container.innerHTML = '';
+        toc.innerHTML = '';
+
+        navConfig.forEach((group, index) => {
+            const sectionId = `nav-sec-${index}`;
+            
+            // 渲染内容区
+            const section = document.createElement('div');
+            section.className = 'nav-group';
+            section.id = sectionId;
+            section.innerHTML = `
+                <div class="nav-section-header">
+                    <i class="ph-bold ${group.icon}"></i> ${group.category}
+                </div>
+                <div class="nav-grid">
+                    ${group.links.map(link => `
+                        <a href="${link.url}" target="_blank" class="nav-link-card">
+                            <div class="nav-icon-box">
+                                <i class="ph-bold ${link.icon}"></i>
+                            </div>
+                            <div class="nav-link-info">
+                                <div class="nav-link-title">${link.title}</div>
+                                <div class="nav-link-desc">${link.desc}</div>
+                            </div>
+                        </a>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(section);
+
+            // 渲染目录
+            const tocItem = document.createElement('li');
+            tocItem.className = 'nav-toc-item';
+            
+            const link = document.createElement('a');
+            link.className = 'nav-toc-link';
+            link.innerText = group.category;
+            link.onclick = (e) => {
+                e.preventDefault();
+                document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+            };
+            
+            tocItem.appendChild(link);
+            toc.appendChild(tocItem);
+        });
+
+        // 监听滚动实现目录高亮
+        window.addEventListener('scroll', () => {
+            let current = -1;
+            navConfig.forEach((_, i) => {
+                const sec = document.getElementById(`nav-sec-${i}`);
+                if (sec) {
+                    const rect = sec.getBoundingClientRect();
+                    // 当元素顶部距离视口上方小于 150px 时认为进入了该区域
+                    if (rect.top <= 150) {
+                        current = i;
+                    }
+                }
+            });
+            
+            const links = document.querySelectorAll('.nav-toc-link');
+            links.forEach((link, idx) => {
+                link.classList.remove('active');
+                if (idx === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    }
+
+    // --- 2. 全局配置逻辑 ---
     // 默认配置
     const defaultConfig = {
         bgType: 'default', // default | custom | bing
@@ -1917,7 +2026,7 @@
     }
 
 
-    // --- 搜索模块逻辑 ---
+    // --- 3. 搜索模块逻辑 ---
     function toggleSearch() {
         const container = document.getElementById('searchContainer');
         const input = document.getElementById('searchInput');
@@ -1952,7 +2061,7 @@
     }
 
 
-    // --- 0. 快速访问逻辑 (新增功能) ---
+    // --- 4. 快速访问逻辑 ---
     const defaultShortcuts = [
         { title: "🔍 百度", url: "https://www.baidu.com" },
         { title: "🔥 微博", url: "https://weibo.com" },
@@ -2066,7 +2175,7 @@
     renderShortcuts();
 
 
-    // --- 1. 时钟逻辑 (升级：支持农历) ---
+    // --- 5. 时钟逻辑 (升级：支持农历) ---
     function updateClock() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-GB', { hour12: false });
@@ -2102,7 +2211,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- 2. 待办事项逻辑 (增强版：层级 + 进度 + Deadline + 一键拆解 + 每日任务 + 编辑 + 计时) ---
+    // --- 6. 待办事项逻辑 ---
     let currentTab = 'todo';
     let draggedItem = null; // 拖拽全局变量
 
@@ -2734,7 +2843,7 @@
     if (currentTab === 'day') switchTab('day');
 
 
-    // --- 3. 番茄钟逻辑 (增强版：全历史统计) ---
+    // --- 7. 番茄钟逻辑 (增强版：全历史统计) ---
     // (此处保持原有逻辑不变，省略以缩减篇幅，实际应用中保留)
     let timerInterval;
     let defaultTime = 25 * 60;
@@ -2931,13 +3040,13 @@
     updateCustomTime();
     updateStatsUI(); // 初始化统计显示
 
-    // --- 4. 音乐逻辑 ---
+    // --- 8. 音乐逻辑 ---
     function startVinyl() {
         document.getElementById('vinyl').classList.add('playing');
         setTimeout(() => { document.getElementById('vinyl').classList.remove('playing'); }, 5000);
     }
 
-    // --- 5. 多源热点资讯逻辑 (Multi-Source Trends) ---
+    // --- 9. 多源热点资讯逻辑 (Multi-Source Trends) ---
 
     // 源配置定义
     const TREND_SOURCES = [
@@ -3155,7 +3264,7 @@
     }
 
     
-    // --- 6. 高德天气系统 (Web 服务 API REST 版 + CORS Proxy) ---
+    // --- 10. 高德天气系统 (Web 服务 API REST 版 + CORS Proxy) ---
     const weatherConfig = {
         adcode: localStorage.getItem('amap_adcode') || '110000', // 默认北京
         city: localStorage.getItem('amap_city') || '北京市',
@@ -3322,7 +3431,7 @@
         if(e.key === 'Enter') searchLocation();
     }
 
-    // --- 7. 灵感与娱乐模块 (NEW: 随机名言 & 答案之书) ---
+    // --- 11. 灵感与娱乐模块 (NEW: 随机名言 & 答案之书) ---
     function initInspirationModule() {
         const mode = appConfig.inspirationMode || 'saying';
         const titleEl = document.getElementById('inspirationTitle');
@@ -3484,10 +3593,12 @@
     applyAppConfig(); 
     initWeather();
     checkNewsStatus(); // Initialize check
+    renderNav(); // 初始化导航页
+
     setInterval(() => {
         fetchWeather(weatherConfig.adcode, weatherConfig.city);
     }, 1800000);
 
 </script>
 </body>
-</html>
+</html>s
