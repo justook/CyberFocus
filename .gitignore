@@ -1,0 +1,10 @@
+# 本地工作数据：修改前备份、校验脚本等，不进仓库
+.workbuddy/
+
+# 开发者内部文档：缺陷分析、修复记录，不进公开仓库
+PROJECT_ANALYSIS.md
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
