@@ -6232,10 +6232,10 @@
                         <option value="priv" ${eSpend ? '' : 'selected'}>特权 · 不动钱</option>
                         <option value="spend" ${eSpend ? 'selected' : ''}>真实消费 · 同记支出</option>
                     </select>
-                    <span id="lgrShopSpendRow" style="display:${shopSpendRowVisible() ? 'flex' : 'none'};gap:6px;flex:1;min-width:0;">
-                        <select id="lgrShopCat" style="flex:none;width:104px;">${cats.map(c => `<option ${eSpend && eSpend.cat === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
-                        <input id="lgrShopAmount" type="number" min="0" step="0.01" placeholder="默认金额" value="${eSpend ? eSpend.amount : ''}" style="width:84px;flex:none;">
-                        <select id="lgrShopAccount" style="flex:none;width:104px;">${accs.map(a => `<option ${eSpend && eSpend.account === a ? 'selected' : ''}>${a}</option>`).join('')}</select>
+                    <span id="lgrShopSpendRow" style="display:${shopSpendRowVisible() ? 'flex' : 'none'};gap:6px;flex:1;min-width:316px;flex-wrap:wrap;">
+                        <select id="lgrShopCat" style="flex:1 1 104px;min-width:104px;">${cats.map(c => `<option ${eSpend && eSpend.cat === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
+                        <input id="lgrShopAmount" type="number" min="0" step="0.01" placeholder="默认金额" value="${eSpend ? eSpend.amount : ''}" style="flex:1 1 84px;min-width:84px;">
+                        <select id="lgrShopAccount" style="flex:1 1 104px;min-width:104px;">${accs.map(a => `<option ${eSpend && eSpend.account === a ? 'selected' : ''}>${a}</option>`).join('')}</select>
                     </span>
                     <button class="lgr-mini-btn" onclick="saveShopItem()">${editing ? '保存修改' : '添加'}</button>
                     ${editing ? '<button class="lgr-mini-btn" onclick="cancelShopEdit()">取消</button>' : ''}
