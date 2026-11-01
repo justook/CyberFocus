@@ -89,7 +89,6 @@
         body.motion-off .bg-blob,
         body.motion-off .weather-icon-box,
         body.motion-off .shortcut-btn,
-        body.motion-off .vinyl-record,
         body.motion-off .scroll-down-indicator,
         body.motion-off .timer-btn.running,
         body.motion-off .news-badge,
@@ -840,26 +839,300 @@
         /* 归档视图下隐藏新建任务区 */
         .task-input-container.is-hidden { display: none; }
 
-        /* --- 4. 右侧栏 (音乐与新闻) --- */
+        /* --- 4. 右侧栏 (账本与新闻) --- */
         .extra-content { grid-area: extra; display: flex; flex-direction: column; gap: 25px; }
 
-        /* 音乐卡片 */
-        .music-card { text-align: center; overflow: hidden; }
-        .vinyl-record {
-            width: 100px; height: 100px; border-radius: 50%;
-            background: radial-gradient(circle, #111 20%, #333 21%, #111 23%, #111 100%);
-            margin: 0 auto 15px; border: 2px solid rgba(255,255,255,0.1);
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
-        .vinyl-inner { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; }
-        .vinyl-record.playing { animation: spinRecord 4s linear infinite; }
-        @keyframes spinRecord { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        /* ===== 记账卡片（原位替换原音乐卡片） ===== */
+        .ledger-card { display: flex; flex-direction: column; gap: 13px; }
+        .ledger-card h3 { margin-bottom: 0; }
 
-        .music-link {
-            display: block; background: linear-gradient(90deg, #31c27c, #269e63);
-            color: white; padding: 12px; border-radius: 30px; text-decoration: none;
-            font-size: 14px; font-weight: bold; margin-top: 10px;
+        .lgr-hero {
+            background: linear-gradient(135deg, rgba(0, 242, 234, 0.10), rgba(255, 0, 80, 0.06));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; padding: 13px 15px;
         }
+        .lgr-hero-label { font-size: 11px; letter-spacing: 1px; color: var(--text-sec); }
+        .lgr-hero-val {
+            font-family: 'Courier New', monospace; font-weight: 800; font-size: 29px; line-height: 1.2;
+            margin-top: 2px; word-break: break-all;
+            background: linear-gradient(to right, #00f2ea, #31c27c);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .lgr-hero-val.is-over {
+            background: linear-gradient(to right, var(--accent), #ff8a8a);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .lgr-hero-sub { font-size: 11px; color: var(--text-sec); margin-top: 3px; line-height: 1.5; }
+
+        .lgr-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .lgr-metric { background: rgba(0, 0, 0, 0.22); border-radius: 10px; padding: 9px 11px; min-width: 0; }
+        .lgr-metric-label { display: block; font-size: 10px; color: var(--text-sec); letter-spacing: .5px; }
+        .lgr-metric-val {
+            display: block; font-size: 16px; font-weight: 700; margin-top: 3px;
+            font-family: 'Courier New', monospace; color: var(--primary);
+        }
+        .lgr-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .lgr-chip {
+            font-size: 10px; padding: 2px 7px; border-radius: 20px;
+            background: rgba(255, 0, 80, 0.14); color: #ff8f9f; border: 1px solid rgba(255, 0, 80, 0.25);
+            white-space: nowrap;
+        }
+        .lgr-chip.ok { background: rgba(49, 194, 124, 0.12); color: #6fdcac; border-color: rgba(49, 194, 124, 0.25); }
+
+        /* 一句话记账：输入框 + 记 */
+        .lgr-quick { display: flex; gap: 8px; }
+        .lgr-quick input {
+            flex: 1; min-width: 0; background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px;
+            padding: 9px 12px; color: #fff; font-size: 13px; transition: 0.25s;
+        }
+        .lgr-quick input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 242, 234, 0.12); }
+        .lgr-quick input::placeholder { color: rgba(255, 255, 255, 0.28); }
+        .lgr-quick-btn {
+            padding: 9px 15px; border-radius: 10px; background: var(--primary); color: #001a19;
+            font-weight: 700; font-size: 13px; box-shadow: 0 0 12px rgba(0, 242, 234, 0.25);
+        }
+        .lgr-quick-btn:hover { background: #fff; transform: scale(1.04); }
+        .lgr-quick-btn:active { transform: scale(0.96); }
+
+        .lgr-templates { display: flex; flex-wrap: wrap; gap: 6px; }
+        .lgr-tpl {
+            font-size: 11px; padding: 4px 9px; border-radius: 8px; cursor: pointer;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-sec); transition: 0.2s;
+        }
+        .lgr-tpl:hover { color: var(--primary); border-color: rgba(0, 242, 234, 0.45); background: rgba(0, 242, 234, 0.08); transform: translateY(-1px); }
+
+        .lgr-split { height: 1px; background: rgba(255, 255, 255, 0.08); }
+
+        .lgr-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .lgr-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .lgr-row-title { font-size: 12px; color: var(--text-sec); }
+        .lgr-row-value { font-size: 13px; color: #eee; }
+        .lgr-row-value b { color: var(--warning); font-family: 'Courier New', monospace; font-size: 16px; }
+        .lgr-row-hint { font-size: 11px; color: var(--text-sec); margin-left: 2px; }
+        .lgr-mini-btn {
+            padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 600;
+            background: rgba(255, 255, 255, 0.08); color: #ddd; border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+        }
+        .lgr-mini-btn:hover { background: rgba(0, 242, 234, 0.15); color: var(--primary); border-color: rgba(0, 242, 234, 0.4); }
+
+        /* 卡片内的攒钱进度 */
+        .lgr-goal { background: rgba(0, 0, 0, 0.2); border-radius: 10px; padding: 10px 12px; }
+        .lgr-goal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        .lgr-goal-name { font-size: 12px; color: #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lgr-goal-pct { font-size: 12px; color: var(--primary); font-family: 'Courier New', monospace; }
+        .lgr-goal-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 10px; color: var(--text-sec); }
+
+        .lgr-bar { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); overflow: hidden; margin-top: 6px; }
+        .lgr-bar > i {
+            display: block; height: 100%; border-radius: 6px;
+            background: linear-gradient(90deg, var(--primary), #31c27c);
+            box-shadow: 0 0 10px rgba(0, 242, 234, 0.35);
+            transition: width 0.4s ease;
+        }
+
+        /* ===== 账本弹窗 ===== */
+        #ledgerModal .modal-content {
+            max-width: 860px; width: 94%; height: 84vh; padding: 0;
+            display: flex; flex-direction: column; text-align: left; overflow: hidden;
+        }
+        .lgr-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 22px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .lgr-head h3 { margin: 0; font-size: 16px; }
+        .lgr-close {
+            background: none; border: none; color: var(--text-sec); font-size: 24px;
+            line-height: 1; cursor: pointer; padding: 0 4px; transition: 0.2s;
+        }
+        .lgr-close:hover { color: #fff; transform: rotate(90deg); }
+
+        .lgr-tabs {
+            display: flex; gap: 4px; padding: 10px 18px 0; overflow-x: auto;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08); flex-shrink: 0;
+        }
+        .lgr-tabs::-webkit-scrollbar { display: none; }
+        .lgr-tab {
+            padding: 9px 15px; font-size: 13px; color: var(--text-sec); cursor: pointer;
+            border-radius: 10px 10px 0 0; white-space: nowrap; transition: 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .lgr-tab:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
+        .lgr-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; background: rgba(0, 242, 234, 0.06); }
+
+        .lgr-body { flex: 1; overflow-y: auto; padding: 18px 22px 26px; }
+        .lgr-body::-webkit-scrollbar { width: 4px; }
+        .lgr-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 4px; }
+        .lgr-panel { display: none; animation: fadeIn 0.25s ease; }
+        .lgr-panel.active { display: block; }
+
+        /* 流水页 */
+        .lgr-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .lgr-stat { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px; padding: 10px 12px; }
+        .lgr-stat span { display: block; font-size: 11px; color: var(--text-sec); }
+        .lgr-stat b { font-size: 17px; font-family: 'Courier New', monospace; }
+        .lgr-stat .exp { color: #ff8f9f; }
+        .lgr-stat .inc { color: var(--success); }
+
+        .lgr-form {
+            display: grid; grid-template-columns: auto 88px 1fr 1fr 1fr 130px auto; gap: 8px;
+            align-items: center; background: rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 12px; margin-bottom: 16px;
+        }
+        .lgr-form input, .lgr-form select, .lgr-block input, .lgr-goal-form input, .lgr-goal-form select {
+            background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px; padding: 8px 10px; color: #fff; font-size: 12px; width: 100%; min-width: 0;
+        }
+        .lgr-form input:focus, .lgr-form select:focus, .lgr-block input:focus { border-color: var(--primary); }
+        .lgr-form select option, .lgr-block select option { background: #1b1b2b; color: #fff; }
+        .lgr-form .btn-primary { padding: 8px 16px; border-radius: 8px; white-space: nowrap; }
+
+        .lgr-seg { display: inline-flex; background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 3px; }
+        .lgr-seg button {
+            padding: 5px 11px; border-radius: 6px; background: none; color: var(--text-sec);
+            font-size: 12px; font-weight: 600;
+        }
+        .lgr-seg button.active { background: rgba(0, 242, 234, 0.16); color: var(--primary); }
+        .lgr-seg button.active.exp { background: rgba(255, 0, 80, 0.16); color: #ff8f9f; }
+
+        .lgr-filter { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; color: var(--text-sec); }
+        .lgr-filter-btn {
+            padding: 4px 11px; border-radius: 20px; font-size: 11px; background: rgba(255, 255, 255, 0.06);
+            color: var(--text-sec); border: 1px solid transparent;
+        }
+        .lgr-filter-btn.active { color: var(--primary); border-color: rgba(0, 242, 234, 0.5); background: rgba(0, 242, 234, 0.08); }
+        .lgr-filter-month { margin-left: auto; font-family: 'Courier New', monospace; }
+
+        .lgr-day-head {
+            display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sec);
+            padding: 10px 2px 6px; border-bottom: 1px dashed rgba(255, 255, 255, 0.08); margin-bottom: 2px;
+        }
+        .lgr-tx {
+            display: flex; align-items: center; gap: 10px; padding: 9px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04); transition: 0.2s;
+        }
+        .lgr-tx:hover { background: rgba(255, 255, 255, 0.03); }
+        .lgr-tx-cat {
+            font-size: 11px; padding: 3px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.07);
+            color: #ddd; white-space: nowrap; flex-shrink: 0;
+        }
+        .lgr-tx-note { flex: 1; min-width: 0; font-size: 13px; color: #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lgr-tx-acc { font-size: 10px; color: var(--text-sec); background: rgba(0, 0, 0, 0.25); padding: 2px 6px; border-radius: 5px; flex-shrink: 0; }
+        .lgr-tx-amt { font-family: 'Courier New', monospace; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+        .lgr-tx-amt.exp { color: #ff8f9f; }
+        .lgr-tx-amt.inc { color: var(--success); }
+        .lgr-tx-del {
+            background: none; border: none; color: rgba(255, 255, 255, 0.2); cursor: pointer;
+            font-size: 15px; padding: 0 3px; opacity: 0; transition: 0.2s; flex-shrink: 0;
+        }
+        .lgr-tx:hover .lgr-tx-del { opacity: 1; }
+        .lgr-tx-del:hover { color: var(--accent); }
+
+        .lgr-empty { text-align: center; color: rgba(255, 255, 255, 0.35); font-size: 12px; padding: 34px 10px; line-height: 1.9; }
+
+        /* 预算页 */
+        .lgr-block { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+        .lgr-block-title { font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .lgr-block-title small { font-weight: 400; font-size: 11px; color: var(--text-sec); }
+        .lgr-inline { display: flex; gap: 8px; align-items: center; }
+        .lgr-inline input { max-width: 160px; }
+        .lgr-inline .btn-primary { padding: 8px 16px; border-radius: 8px; }
+        .lgr-hint { font-size: 11px; color: var(--text-sec); margin-top: 9px; line-height: 1.6; }
+
+        .lgr-cat-row { display: grid; grid-template-columns: 76px 92px 1fr 108px; gap: 10px; align-items: center; padding: 5px 0; }
+        .lgr-cat-name { font-size: 12px; color: #ddd; white-space: nowrap; }
+        .lgr-cat-bar { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+        .lgr-cat-bar > i { display: block; height: 100%; border-radius: 6px; background: var(--primary); transition: width 0.4s ease; }
+        .lgr-cat-bar > i.warn { background: var(--warning); }
+        .lgr-cat-bar > i.over { background: var(--accent); }
+        .lgr-cat-spent { font-size: 11px; color: var(--text-sec); font-family: 'Courier New', monospace; text-align: right; }
+        .lgr-cat-spent.over { color: #ff8f9f; }
+
+        /* 攒钱页 */
+        .lgr-goal-form { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 8px; align-items: center; }
+        .lgr-goal-form .btn-primary { padding: 8px 16px; border-radius: 8px; }
+        .lgr-goal-card {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+        }
+        .lgr-goal-card.done { border-color: rgba(49, 194, 124, 0.45); background: rgba(49, 194, 124, 0.06); }
+        .lgr-goal-line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        .lgr-goal-title { font-size: 14px; font-weight: 600; color: #fff; }
+        .lgr-goal-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11px; color: var(--text-sec); margin-top: 8px; }
+        .lgr-goal-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .lgr-goal-actions button { padding: 6px 14px; border-radius: 8px; font-size: 11px; }
+
+        /* 周报页 */
+        .lgr-week-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .lgr-week-nav button {
+            background: rgba(255, 255, 255, 0.07); color: #ddd; border-radius: 8px;
+            padding: 5px 11px; font-size: 12px;
+        }
+        .lgr-week-nav button:hover { background: rgba(0, 242, 234, 0.15); color: var(--primary); }
+        .lgr-week-label { font-size: 13px; color: #fff; font-family: 'Courier New', monospace; }
+
+        .lgr-report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px; }
+        .lgr-report-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 13px 15px; }
+        .lgr-report-card h4 { font-size: 12px; color: var(--primary); margin-bottom: 9px; letter-spacing: .5px; font-weight: 600; }
+        .lgr-kv { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: var(--text-sec); }
+        .lgr-kv b { color: #eee; font-family: 'Courier New', monospace; font-weight: 600; }
+
+        .lgr-quote {
+            border-left: 3px solid var(--primary); background: rgba(0, 242, 234, 0.06);
+            border-radius: 0 10px 10px 0; padding: 14px 16px; font-size: 13px; line-height: 1.8;
+            color: #eafcfb; margin-bottom: 12px;
+        }
+        .lgr-advice { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .lgr-advice li {
+            font-size: 12px; color: #ddd; line-height: 1.7; padding-left: 20px; position: relative;
+        }
+        .lgr-advice li::before {
+            content: '→'; position: absolute; left: 0; color: var(--warning);
+        }
+
+        /* 番茄币页 */
+        .lgr-coin-hero {
+            display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+            background: linear-gradient(135deg, rgba(255, 191, 0, 0.12), rgba(255, 0, 80, 0.06));
+            border: 1px solid rgba(255, 191, 0, 0.22); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px;
+        }
+        .lgr-coin-num { font-size: 34px; font-weight: 800; color: var(--warning); font-family: 'Courier New', monospace; line-height: 1; }
+        .lgr-coin-sub { font-size: 11px; color: var(--text-sec); line-height: 1.8; }
+        .lgr-rule { font-size: 11px; color: var(--text-sec); line-height: 1.9; }
+        .lgr-rule b { color: #ddd; }
+
+        .lgr-shop { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+        .lgr-shop-item {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; padding: 13px; display: flex; flex-direction: column; gap: 8px;
+            transition: 0.25s;
+        }
+        .lgr-shop-item:hover { border-color: rgba(255, 191, 0, 0.35); transform: translateY(-2px); }
+        .lgr-shop-emoji { font-size: 20px; }
+        .lgr-shop-name { font-size: 12px; color: #eee; line-height: 1.5; flex: 1; }
+        .lgr-shop-cost { font-size: 12px; color: var(--warning); font-family: 'Courier New', monospace; }
+        .lgr-shop-btn {
+            padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
+            background: rgba(255, 191, 0, 0.14); color: var(--warning); border: 1px solid rgba(255, 191, 0, 0.3);
+        }
+        .lgr-shop-btn:hover:not(:disabled) { background: var(--warning); color: #241a00; }
+        .lgr-shop-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .lgr-shop-note { font-size: 10px; color: var(--text-sec); }
+
+        /* 通用小提示弹窗（存钱 / 兑换金额） */
+        #lgrPromptModal .modal-content { max-width: 340px; text-align: left; padding: 26px; }
+        #lgrPromptModal h3 { justify-content: flex-start; font-size: 15px; }
+        .lgr-prompt-msg { font-size: 12px; color: #bbb; line-height: 1.7; margin-bottom: 12px; }
+        #lgrPromptModal input {
+            width: 100%; padding: 11px 12px; border-radius: 10px; font-size: 16px;
+            background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff; text-align: center; font-family: 'Courier New', monospace;
+        }
+        #lgrPromptModal input:focus { border-color: var(--primary); }
+        .lgr-prompt-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .lgr-prompt-actions button { flex: 1; }
 
         .trend-list { list-style: none; }
         .trend-item {
@@ -1449,6 +1722,30 @@
             .card { padding: 18px; }
             .tab-btn { padding: 9px 6px; font-size: 13px; }
             .modal-content { width: min(92vw, 480px); }
+
+            /* 账本：窄屏弹窗铺满，表单从 6 列折成 2 列 */
+            #ledgerModal .modal-content { width: 96vw; height: 88vh; }
+            .lgr-head { padding: 14px 15px 10px; }
+            .lgr-tabs { padding: 8px 10px 0; }
+            .lgr-tab { padding: 8px 11px; font-size: 12px; }
+            .lgr-body { padding: 14px 14px 22px; }
+            .lgr-form { grid-template-columns: 1fr 1fr; }
+            .lgr-form .lgr-seg { grid-column: 1 / -1; justify-self: start; }
+            .lgr-stats { gap: 6px; }
+            .lgr-stat { padding: 8px 9px; }
+            .lgr-stat b { font-size: 15px; }
+            .lgr-cat-row {
+                grid-template-columns: 1fr 88px;
+                grid-template-areas: "name input" "bar spent";
+                row-gap: 5px;
+            }
+            .lgr-cat-name { grid-area: name; }
+            .lgr-cat-row input { grid-area: input; }
+            .lgr-cat-row .lgr-cat-bar { grid-area: bar; }
+            .lgr-cat-spent { grid-area: spent; }
+            .lgr-goal-form { grid-template-columns: 1fr 1fr; }
+            .lgr-goal-form .btn-primary { grid-column: 1 / -1; }
+            .lgr-metrics { grid-template-columns: 1fr; }
         }
 
         /* 触屏设备没有 hover：解除绑定按钮常显，否则无法解绑 */
@@ -1626,13 +1923,48 @@
 
             <!-- Extra -->
             <div class="extra-content" id="extraCol">
-                <div class="card music-card" id="musicCard">
-                    <h3><span class="title-text">🎧 QQ 音乐</span></h3>
-                    <div class="vinyl-record" id="vinyl">
-                        <div class="vinyl-inner"></div>
+                <!-- 记账卡片（原位替换原「QQ 音乐」模块） -->
+                <div class="card ledger-card" id="ledgerCard">
+                    <h3>
+                        <span class="title-text">💰 本月账本</span>
+                        <button class="header-btn" onclick="openLedger('flows')" title="打开完整账本" style="font-size:12px;">账本 →</button>
+                    </h3>
+
+                    <div class="lgr-hero">
+                        <span class="lgr-hero-label">本月预算剩余</span>
+                        <div class="lgr-hero-val" id="lgrRemaining">¥0</div>
+                        <div class="lgr-hero-sub" id="lgrBudgetSub">还没设月度预算</div>
                     </div>
-                    <p style="font-size:12px; color:#aaa; margin-bottom:10px;">沉浸式聆听</p>
-                    <a href="https://y.qq.com/" target="_blank" class="music-link" onclick="startVinyl()">前往播放器</a>
+
+                    <div class="lgr-metrics">
+                        <div class="lgr-metric">
+                            <span class="lgr-metric-label">今日建议可花</span>
+                            <span class="lgr-metric-val" id="lgrDaily">¥0</span>
+                        </div>
+                        <div class="lgr-metric">
+                            <span class="lgr-metric-label">超支分类</span>
+                            <div class="lgr-chips" id="lgrOverspent"><span class="lgr-chip ok">预算健康</span></div>
+                        </div>
+                    </div>
+
+                    <div class="lgr-quick">
+                        <input type="text" id="lgrQuickInput" placeholder="午饭 25 微信" autocomplete="off"
+                               onkeypress="if(event.key==='Enter')submitQuickEntry()">
+                        <button class="lgr-quick-btn" onclick="submitQuickEntry()">记</button>
+                    </div>
+                    <div class="lgr-templates" id="lgrTemplates"></div>
+
+                    <div class="lgr-split"></div>
+
+                    <div class="lgr-row">
+                        <div class="lgr-row-main">
+                            <span class="lgr-row-title">🪙 番茄币账户</span>
+                            <span class="lgr-row-value"><b id="lgrCoinBalance">0</b> 币<span class="lgr-row-hint" id="lgrCoinToday">今日 +0 / 20</span></span>
+                        </div>
+                        <button class="lgr-mini-btn" onclick="openLedger('coin')">兑换</button>
+                    </div>
+
+                    <div class="lgr-goal" id="lgrGoalBox"></div>
                 </div>
 
                 <div class="card" id="weiboCard">
@@ -1820,7 +2152,7 @@
                 <div class="config-tab" onclick="switchConfigTab('weather', this)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-cloud"></use></svg> 天气模块</div>
                 <div class="config-tab" onclick="switchConfigTab('quick', this)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-lightning"></use></svg> 快速访问</div>
                 <div class="config-tab" onclick="switchConfigTab('task', this)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-list-checks"></use></svg> 任务计划</div>
-                <div class="config-tab" onclick="switchConfigTab('music', this)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-music-note"></use></svg> 音乐模块</div>
+                <div class="config-tab" onclick="switchConfigTab('ledger', this)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-notebook"></use></svg> 记账模块</div>
                 <div class="config-tab" onclick="switchConfigTab('pomo', this)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-hourglass"></use></svg> 番茄时钟</div>
                 <div class="config-tab" onclick="switchConfigTab('weibo', this)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-fire"></use></svg> 热榜源设置</div>
                 <div class="config-tab" onclick="switchConfigTab('news', this)"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-magic-wand"></use></svg> 灵感与娱乐</div>
@@ -1920,13 +2252,37 @@
                     </div>
                 </div>
 
-                <!-- 音乐 -->
-                <div id="cfg-music" class="config-section">
-                    <div class="config-header">音乐模块</div>
+                <!-- 记账 -->
+                <div id="cfg-ledger" class="config-section">
+                    <div class="config-header">记账模块</div>
                     <div class="toggle-row">
                         <span class="toggle-label">显示模块</span>
-                        <label class="switch"><input type="checkbox" id="chk-musicCard" onchange="toggleModule('musicCard')"><span class="slider"></span></label>
+                        <label class="switch"><input type="checkbox" id="chk-ledgerCard" onchange="toggleModule('ledgerCard')"><span class="slider"></span></label>
                     </div>
+                    <div class="toggle-row">
+                        <span class="toggle-label">番茄完成后自动发币</span>
+                        <label class="switch"><input type="checkbox" id="chk-coinEnabled" onchange="saveLedgerSettings()"><span class="slider"></span></label>
+                    </div>
+                    <div class="input-group" style="margin-top:18px;">
+                        <label style="font-size:12px; color:#aaa;">每日番茄币上限（防刷）</label>
+                        <input type="number" id="cfgCoinCap" min="0" max="100" onchange="saveLedgerSettings()">
+                    </div>
+                    <div class="input-group">
+                        <label style="font-size:12px; color:#aaa;">计币的最短专注时长（分钟，暂停/中断不计）</label>
+                        <input type="number" id="cfgCoinMinMinutes" min="0" max="60" onchange="saveLedgerSettings()">
+                    </div>
+                    <div class="input-group">
+                        <label style="font-size:12px; color:#aaa;">存钱奖励：每存 X 元奖励 Y 币</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="number" id="cfgSaveStep" min="1" onchange="saveLedgerSettings()">
+                            <input type="number" id="cfgSaveCoins" min="1" onchange="saveLedgerSettings()">
+                        </div>
+                    </div>
+                    <p style="font-size:11px; color:#888; margin-top:12px; line-height:1.7;">
+                        番茄币是「注意力货币」，只能兑换特权与娱乐额度，不兑换现金；
+                        兑换真实消费（如奶茶）时会同时记一笔支出，避免账实不符。
+                    </p>
+                    <button class="btn-primary" style="margin-top:14px;" onclick="closeConfigModal(); openLedger('budget')">打开账本</button>
                 </div>
 
                 <!-- 番茄时钟 -->
@@ -2005,7 +2361,7 @@
                     <div class="config-header">关于</div>
                     <div style="text-align:center; margin-top:40px;">
                         <h2 style="color:#fff; font-family:'Courier New', monospace;">CyberFocus</h2>
-                        <p style="color:var(--primary); font-size:18px;">v0.9.0</p>
+                        <p style="color:var(--primary); font-size:18px;">v0.10.0</p>
                         <p style="color:#aaa; font-size:12px; margin-top:20px;">Designed for Productivity & Aesthetics.</p>
                     </div>
                 </div>
@@ -2065,6 +2421,44 @@
         </div>
     </div>
 
+    <!-- 账本弹窗：流水 / 预算 / 攒钱 / 周报 / 番茄币 -->
+    <div id="ledgerModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="lgr-head">
+                <h3><span class="title-text">💰 账本</span></h3>
+                <button class="lgr-close" onclick="closeLedger()" title="关闭">×</button>
+            </div>
+            <div class="lgr-tabs">
+                <div class="lgr-tab active" data-tab="flows" onclick="switchLedgerTab('flows', this)">收支流水</div>
+                <div class="lgr-tab" data-tab="budget" onclick="switchLedgerTab('budget', this)">月度预算</div>
+                <div class="lgr-tab" data-tab="saving" onclick="switchLedgerTab('saving', this)">攒钱计划</div>
+                <div class="lgr-tab" data-tab="report" onclick="switchLedgerTab('report', this)">周报复盘</div>
+                <div class="lgr-tab" data-tab="coin" onclick="switchLedgerTab('coin', this)">番茄币</div>
+            </div>
+            <div class="lgr-body">
+                <div id="lgrPanel-flows" class="lgr-panel active"></div>
+                <div id="lgrPanel-budget" class="lgr-panel"></div>
+                <div id="lgrPanel-saving" class="lgr-panel"></div>
+                <div id="lgrPanel-report" class="lgr-panel"></div>
+                <div id="lgrPanel-coin" class="lgr-panel"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 金额输入弹窗：存钱、兑换奶茶时同时记账，都走这里（不用原生 prompt） -->
+    <div id="lgrPromptModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="lgrPromptTitle">输入金额</h3>
+            <p class="lgr-prompt-msg" id="lgrPromptMsg"></p>
+            <input type="number" id="lgrPromptInput" step="0.01" min="0" inputmode="decimal"
+                   onkeypress="if(event.key==='Enter')confirmLgrPrompt()">
+            <div class="lgr-prompt-actions">
+                <button class="btn-primary" onclick="confirmLgrPrompt()">确认</button>
+                <button class="btn-sec" onclick="closeLgrPrompt()">取消</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 轻提示容器 -->
     <div id="toastHost" class="toast-host" aria-live="polite"></div>
 
@@ -2078,7 +2472,12 @@
         || typeof CyberCore.calcTaskProgress !== 'function'
         || typeof CyberCore.getDeadlineStatus !== 'function'
         || typeof CyberCore.normalizeTrendItems !== 'function'
-        || typeof CyberCore.normalizeTrendUrl !== 'function';
+        || typeof CyberCore.normalizeTrendUrl !== 'function'
+        // 记账模块依赖的纯函数，缺一个就让记账整块失效，同样按「文件版本不匹配」拦下
+        || typeof CyberCore.parseQuickEntry !== 'function'
+        || typeof CyberCore.calcBudgetSummary !== 'function'
+        || typeof CyberCore.calcCoinState !== 'function'
+        || typeof CyberCore.buildWeeklyReport !== 'function';
     if (coreMissing) {
         document.body.innerHTML = '<div style="padding:40px;font-family:system-ui;color:#eee;background:#15152a;min-height:100vh;">'
             + '<h2 style="color:#ff6b6b;">缺少或损坏 js/core.js</h2>'
@@ -3060,7 +3459,7 @@
             weatherCard: true,
             shortcutsCard: true,
             todoCard: true,
-            musicCard: true,
+            ledgerCard: true, // 原 musicCard，已替换为记账卡片
             pomoCard: true,
             weiboCard: true,
             newsCard: true 
@@ -3188,7 +3587,7 @@
         // 否则它的 grid-area 指向已被删除的区域名，会被塞进隐式行并产生空白间距
         const sidebarVisible = m.shortcutsCard || m.pomoCard;
         const showMain = !!m.todoCard;
-        const extraVisible = m.musicCard || m.weiboCard || m.newsCard;
+        const extraVisible = m.ledgerCard || m.weiboCard || m.newsCard;
         const sidebarCol = document.getElementById('sidebarCol');
         const extraCol = document.getElementById('extraCol');
         if (sidebarCol) sidebarCol.classList.toggle('module-hidden', !sidebarVisible);
@@ -3332,6 +3731,9 @@
         
         // 热榜源
         renderTrendSettings();
+
+        // 记账模块（番茄币规则）回显
+        syncLedgerSettingsInputs();
     }
 
     // --- 设置面板交互逻辑 ---
@@ -4767,8 +5169,12 @@
 
                     // 计时结束，按实际专注时长记入历史日志（暂停多次也累计整段）；
                     // pomoStartLeft 为 null 时（异常路径兜底）退回当前剩余时间
-                    addToHistory(pomoStartLeft !== null ? pomoStartLeft : timeLeft);
+                    const pomoSeconds = pomoStartLeft !== null ? pomoStartLeft : timeLeft;
+                    addToHistory(pomoSeconds);
                     pomoStartLeft = null;
+                    // 记账模块：走完的番茄发 1 枚番茄币。必须在 resetTimer 之前调用，
+                    // 那里会清掉 pomoTaskId，周报的「各计划投入分布」就拿不到这次专注属于哪个任务了
+                    awardPomodoroCoin(pomoSeconds / 60);
                     // 绑定任务的计时一并收账（按真实秒数。focusHistory 是当日专注、
                     // timeSpent 是任务真实投入，两本账口径不同但各自准确）
                     stopBoundTaskTimer();
@@ -4803,10 +5209,1066 @@
     updateCustomTime();
     updateStatsUI(); // 初始化统计显示
 
-    // --- 8. 音乐逻辑 ---
-    function startVinyl() {
-        document.getElementById('vinyl').classList.add('playing');
-        setTimeout(() => { document.getElementById('vinyl').classList.remove('playing'); }, 5000);
+    // --- 8. 记账 / 番茄币 / 攒钱 / 周报（原位替换原音乐模块） ---
+    // 数据全部落在 localStorage 的 cyberLedger 一个键里，结构见 normalizeLedger。
+    // 计算口径一律走 js/core.js 的纯函数，这里只负责读写存储与渲染，避免两套算法打架。
+
+    const LGR_KEY = 'cyberLedger';
+
+    const LGR_DEFAULT_SETTINGS = {
+        coinEnabled: true,   // 番茄完成是否自动发币
+        dailyCap: 20,        // 每日获得上限，防刷
+        minMinutes: 5,       // 单次专注不足这个时长不发币
+        saveStep: 50,        // 每存 X 元
+        saveCoins: 5         // 奖励 Y 币
+    };
+
+    // 模板记账：点一下只补金额，分类和账户都预设好
+    const LGR_TEMPLATES = [
+        { note: '早餐', cat: '餐饮', account: '校园卡' },
+        { note: '午饭', cat: '餐饮', account: '校园卡' },
+        { note: '晚饭', cat: '餐饮', account: '微信' },
+        { note: '奶茶', cat: '餐饮', account: '微信' },
+        { note: '地铁', cat: '交通', account: '支付宝' },
+        { note: '打印', cat: '学习', account: '微信' },
+        { note: '超市', cat: '购物', account: '支付宝' }
+    ];
+
+    // 兑换商店：只兑特权与娱乐额度，不兑现金。
+    // spend 存在 = 这条兑换对应真实消费，兑换时要同时记一笔支出，避免账实不符。
+    const LGR_SHOP = [
+        { id: 'ent1h', emoji: '🎮', name: '1 小时娱乐时间', cost: 30 },
+        { id: 'milktea', emoji: '🧋', name: '一杯奶茶额度', cost: 50, spend: { cat: '餐饮', amount: 15, account: '微信' } },
+        { id: 'sleepin', emoji: '😴', name: '周末睡懒觉特权', cost: 80 },
+        { id: 'wishlist', emoji: '🎁', name: '解锁一个愿望清单购买资格', cost: 100 }
+    ];
+
+    function clampInt(value, min, max, dft) {
+        const n = parseInt(value, 10);
+        if (!Number.isFinite(n)) return dft;
+        return Math.min(max, Math.max(min, n));
+    }
+
+    function lgrEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+    }
+
+    function fmtMoney(n) {
+        const v = Math.round((Number(n) || 0) * 100) / 100;
+        const sign = v < 0 ? '-' : '';
+        const abs = Math.abs(v);
+        return sign + '¥' + abs.toLocaleString('zh-CN', {
+            minimumFractionDigits: abs % 1 ? 2 : 0,
+            maximumFractionDigits: 2
+        });
+    }
+
+    // 存储结构收敛：坏数据不能把整页带崩，缺字段一律补默认值
+    function normalizeLedger(raw) {
+        const data = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+        const TAX = CyberCore.LEDGER_TAXONOMY;
+        const now = todayKey();
+        let seq = 0;
+
+        const tx = (Array.isArray(data.tx) ? data.tx : [])
+            .filter(t => t && typeof t === 'object')
+            .map(t => ({
+                id: String(t.id || `mig${++seq}${Date.now().toString(36)}`),
+                type: t.type === 'income' ? 'income' : 'expense',
+                amount: Math.round((Number(t.amount) || 0) * 100) / 100,
+                cat: (TAX.expense.indexOf(t.cat) >= 0 || TAX.income.indexOf(t.cat) >= 0) ? t.cat : '购物',
+                account: TAX.accounts.indexOf(t.account) >= 0 ? t.account : '微信',
+                note: String(t.note || '').slice(0, 40),
+                date: String(t.date || '').slice(0, 10),
+                ts: Number(t.ts) || 0,
+                src: String(t.src || 'manual'),
+                goalId: t.goalId ? String(t.goalId) : null
+            }))
+            .filter(t => t.amount > 0 && /^\d{4}-\d{2}-\d{2}$/.test(t.date));
+
+        const budgets = (data.budgets && typeof data.budgets === 'object' && !Array.isArray(data.budgets)) ? data.budgets : {};
+
+        const goals = (Array.isArray(data.goals) ? data.goals : [])
+            .filter(g => g && typeof g === 'object' && g.id)
+            .map(g => ({
+                id: String(g.id),
+                name: String(g.name || '目标').slice(0, 20),
+                target: Math.max(0, Math.round((Number(g.target) || 0) * 100) / 100),
+                saved: Math.max(0, Math.round((Number(g.saved) || 0) * 100) / 100),
+                deadline: String(g.deadline || '').slice(0, 10),
+                createdAt: String(g.createdAt || now).slice(0, 10)
+            }));
+
+        const coinTx = (Array.isArray(data.coinTx) ? data.coinTx : [])
+            .filter(c => c && typeof c === 'object' && Number.isFinite(Number(c.delta)) && Number(c.delta) !== 0)
+            .map(c => ({
+                id: String(c.id || `c${++seq}`),
+                delta: Math.round(Number(c.delta) * 100) / 100,
+                kind: ['pomodoro', 'save', 'redeem'].indexOf(c.kind) >= 0 ? c.kind : 'pomodoro',
+                reason: String(c.reason || '').slice(0, 60),
+                date: String(c.date || '').slice(0, 10),
+                ts: Number(c.ts) || 0,
+                minutes: Math.max(0, Number(c.minutes) || 0),
+                taskText: String(c.taskText || '').slice(0, 30),
+                cost: Math.max(0, Number(c.cost) || 0)
+            }));
+
+        const s = (data.settings && typeof data.settings === 'object') ? data.settings : {};
+        const settings = {
+            coinEnabled: s.coinEnabled !== false,
+            dailyCap: clampInt(s.dailyCap, 0, 100, LGR_DEFAULT_SETTINGS.dailyCap),
+            minMinutes: clampInt(s.minMinutes, 0, 60, LGR_DEFAULT_SETTINGS.minMinutes),
+            saveStep: clampInt(s.saveStep, 1, 10000, LGR_DEFAULT_SETTINGS.saveStep),
+            saveCoins: clampInt(s.saveCoins, 1, 1000, LGR_DEFAULT_SETTINGS.saveCoins)
+        };
+
+        return {
+            v: 1,
+            tx,
+            budgets,
+            goals,
+            coinTx,
+            settings,
+            rewards: (data.rewards && typeof data.rewards === 'object') ? data.rewards : {},
+            redeemed: (data.redeemed && typeof data.redeemed === 'object') ? data.redeemed : {}
+        };
+    }
+
+    const lgrData = normalizeLedger(safeParse(LGR_KEY, null, 'object'));
+
+    function saveLedger() {
+        safeSet(LGR_KEY, JSON.stringify(lgrData));
+    }
+
+    // --- 读取口径（一律委托 core.js） ---
+    function lgrMonth(dateStr) {
+        return String(dateStr || todayKey()).slice(0, 7);
+    }
+
+    function lgrBudget(monthKey) {
+        const b = lgrData.budgets[monthKey];
+        if (!b || typeof b !== 'object') return { total: 0, cats: {} };
+        return {
+            total: Number(b.total) || 0,
+            cats: (b.cats && typeof b.cats === 'object') ? b.cats : {}
+        };
+    }
+
+    function ensureBudget(monthKey) {
+        const b = lgrData.budgets[monthKey];
+        if (!b || typeof b !== 'object') lgrData.budgets[monthKey] = { total: 0, cats: {} };
+        if (!lgrData.budgets[monthKey].cats || typeof lgrData.budgets[monthKey].cats !== 'object') {
+            lgrData.budgets[monthKey].cats = {};
+        }
+        return lgrData.budgets[monthKey];
+    }
+
+    function lgrSummary(monthKey) {
+        const mk = monthKey || lgrMonth();
+        return CyberCore.calcBudgetSummary({
+            tx: lgrData.tx,
+            budget: lgrBudget(mk),
+            monthKey: mk,
+            todayKey: todayKey()
+        });
+    }
+
+    function lgrCoin() {
+        return CyberCore.calcCoinState(lgrData.coinTx, todayKey(), lgrData.settings.dailyCap);
+    }
+
+    function shiftDays(dateKey, days) {
+        const parts = String(dateKey).split('-').map(Number);
+        return todayKey(new Date(parts[0], parts[1] - 1, parts[2] + days));
+    }
+
+    // --- 写入 ---
+    function addTx(entry) {
+        const tx = {
+            id: 'tx' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            type: entry.type === 'income' ? 'income' : 'expense',
+            amount: Math.round((Number(entry.amount) || 0) * 100) / 100,
+            cat: entry.cat || '购物',
+            account: entry.account || '微信',
+            note: String(entry.note || '').slice(0, 40),
+            date: entry.date || todayKey(),
+            ts: Date.now(),
+            src: entry.src || 'manual',
+            goalId: entry.goalId || null
+        };
+        if (!(tx.amount > 0)) return null;
+        lgrData.tx.push(tx);
+        saveLedger();
+        return tx;
+    }
+
+    function pushCoin(entry) {
+        lgrData.coinTx.push({
+            id: 'coin' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+            delta: Math.round((Number(entry.delta) || 0) * 100) / 100,
+            kind: entry.kind || 'pomodoro',
+            reason: String(entry.reason || '').slice(0, 60),
+            date: entry.date || todayKey(),
+            ts: Date.now(),
+            minutes: Math.max(0, Number(entry.minutes) || 0),
+            taskText: String(entry.taskText || '').slice(0, 30),
+            cost: Math.max(0, Number(entry.cost) || 0)
+        });
+        saveLedger();
+    }
+
+    // 番茄钟自然结束时调用；暂停/重置走不到这里，所以「只算真正完成」是天然成立的
+    function awardPomodoroCoin(minutes) {
+        const st = lgrData.settings;
+        if (!st.coinEnabled) return;
+
+        const mins = Math.round(Number(minutes) || 0);
+        if (mins <= 0) return;
+        if (mins < st.minMinutes) {
+            showToast(`专注 ${mins} 分钟不足 ${st.minMinutes} 分钟，这次不计币`, 'info', 3000);
+            return;
+        }
+
+        const coin = lgrCoin();
+        if (coin.earnedToday >= st.dailyCap) {
+            showToast(`今日番茄币已达上限 ${st.dailyCap} 枚，明天再来`, 'info', 3200);
+            return;
+        }
+
+        const task = getBoundTask();
+        pushCoin({
+            delta: 1,
+            kind: 'pomodoro',
+            minutes: mins,
+            taskText: task ? task.text : '',
+            reason: '完成一个番茄'
+        });
+        renderLedgerCard();
+        showToast(`完成 ${mins} 分钟专注，+1 番茄币（今日 ${coin.earnedToday + 1}/${st.dailyCap}）`, 'success', 3000);
+    }
+
+    // 存钱奖励：本周「储蓄」流水累计每跨过一个台阶发一次，已发的记在 rewards 里防重复
+    function awardSaveCoins() {
+        const st = lgrData.settings;
+        if (!st.coinEnabled) return;
+
+        const week = CyberCore.weekRange(todayKey());
+        const weekSaved = lgrData.tx.reduce((sum, t) => {
+            if (t.type !== 'expense' || t.cat !== '储蓄') return sum;
+            return (t.date >= week.start && t.date <= week.end) ? sum + t.amount : sum;
+        }, 0);
+
+        const key = week.start;
+        const awarded = Number(lgrData.rewards[key]) || 0;
+        const r = CyberCore.nextSaveReward({
+            weekSaved, step: st.saveStep, coins: st.saveCoins, awarded
+        });
+        if (r.award <= 0) return;
+
+        lgrData.rewards[key] = r.awarded;
+        pushCoin({
+            delta: r.award,
+            kind: 'save',
+            reason: `本周存钱奖励（已存 ${Math.round(weekSaved)} 元）`
+        });
+        showToast(`本周存钱达标，奖励 ${r.award} 枚番茄币`, 'success', 3200);
+    }
+
+    // --- 金额小弹窗（存钱 / 兑换金额 / 删除确认），不用原生 prompt ---
+    let lgrPromptState = null;
+
+    function openLgrPrompt(opts) {
+        lgrPromptState = opts || {};
+        const input = document.getElementById('lgrPromptInput');
+        document.getElementById('lgrPromptTitle').textContent = lgrPromptState.title || '输入金额';
+        document.getElementById('lgrPromptMsg').textContent = lgrPromptState.message || '';
+
+        if (lgrPromptState.mode === 'confirm') {
+            input.style.display = 'none';
+        } else {
+            input.style.display = '';
+            input.value = lgrPromptState.value != null ? lgrPromptState.value : '';
+            input.placeholder = lgrPromptState.placeholder || '金额';
+        }
+        document.getElementById('lgrPromptModal').classList.add('show');
+        if (lgrPromptState.mode !== 'confirm') {
+            setTimeout(() => { input.focus(); input.select(); }, 60);
+        }
+    }
+
+    function closeLgrPrompt() {
+        document.getElementById('lgrPromptModal').classList.remove('show');
+        lgrPromptState = null;
+    }
+
+    function confirmLgrPrompt() {
+        const st = lgrPromptState;
+        if (!st) return;
+
+        let value = 0;
+        if (st.mode !== 'confirm') {
+            value = Number(document.getElementById('lgrPromptInput').value);
+            if (!Number.isFinite(value) || value <= 0) {
+                showToast('请输入大于 0 的金额', 'warn');
+                return;
+            }
+            value = Math.round(value * 100) / 100;
+        }
+
+        closeLgrPrompt();
+        if (typeof st.onConfirm === 'function') st.onConfirm(value);
+    }
+
+    // --- 首页卡片 ---
+    function pickPrimaryGoal() {
+        if (!lgrData.goals.length) return null;
+        const list = lgrData.goals.slice();
+        list.sort((a, b) => {
+            const pa = CyberCore.calcGoalProgress(a, todayKey());
+            const pb = CyberCore.calcGoalProgress(b, todayKey());
+            if (pa.done !== pb.done) return pa.done ? 1 : -1;   // 已达成的沉底
+            return (a.deadline || '9999-12-31').localeCompare(b.deadline || '9999-12-31');
+        });
+        return list[0];
+    }
+
+    function renderCardGoal() {
+        const host = document.getElementById('lgrGoalBox');
+        if (!host) return;
+
+        const goal = pickPrimaryGoal();
+        if (!goal) {
+            host.innerHTML = `
+                <div class="lgr-goal-head">
+                    <span class="lgr-goal-name">🎯 还没有攒钱目标</span>
+                    <button class="lgr-mini-btn" onclick="openLedger('saving')">新建</button>
+                </div>`;
+            return;
+        }
+
+        const p = CyberCore.calcGoalProgress(goal, todayKey());
+        host.innerHTML = `
+            <div class="lgr-goal-head">
+                <span class="lgr-goal-name">🎯 ${lgrEsc(goal.name)}</span>
+                <span class="lgr-goal-pct">${p.pct}%</span>
+            </div>
+            <div class="lgr-bar"><i style="width:${p.pct}%"></i></div>
+            <div class="lgr-goal-foot">
+                <span>${fmtMoney(p.saved)} / ${fmtMoney(p.target)}${p.weeklySuggest ? ` · 每周存 ${fmtMoney(p.weeklySuggest)}` : ''}</span>
+                <button class="lgr-mini-btn" onclick="depositGoal('${goal.id}')">存一笔</button>
+            </div>`;
+    }
+
+    function renderTemplates() {
+        const host = document.getElementById('lgrTemplates');
+        if (!host) return;
+        host.innerHTML = LGR_TEMPLATES
+            .map((t, i) => `<button class="lgr-tpl" onclick="useTemplate(${i})" title="${t.cat} · ${t.account}">${t.note}</button>`)
+            .join('');
+    }
+
+    function renderLedgerCard() {
+        const remainEl = document.getElementById('lgrRemaining');
+        if (!remainEl) return;
+
+        const monthKey = lgrMonth();
+        const s = lgrSummary(monthKey);
+        const coin = lgrCoin();
+
+        remainEl.textContent = fmtMoney(s.remaining);
+        remainEl.classList.toggle('is-over', s.remaining < 0);
+
+        document.getElementById('lgrBudgetSub').textContent = s.hasBudget
+            ? `总预算 ${fmtMoney(s.total)} · 已花 ${fmtMoney(s.spent)} · 余 ${s.daysLeft} 天`
+            : '还没设月度预算，点「账本 →」开始';
+
+        document.getElementById('lgrDaily').textContent = s.hasBudget ? fmtMoney(s.spendable) : '—';
+
+        // 三个数之三：超支分类（最多露两个，多的折叠成 +n）
+        const chips = document.getElementById('lgrOverspent');
+        if (s.overspent.length) {
+            chips.innerHTML = s.overspent.slice(0, 2)
+                .map(o => `<span class="lgr-chip">${lgrEsc(o.cat)} +${Math.round(o.over)}</span>`)
+                .join('') + (s.overspent.length > 2 ? `<span class="lgr-chip">+${s.overspent.length - 2}</span>` : '');
+        } else {
+            chips.innerHTML = '<span class="lgr-chip ok">预算健康</span>';
+        }
+
+        document.getElementById('lgrCoinBalance').textContent = coin.balance;
+        document.getElementById('lgrCoinToday').textContent = `今日 +${coin.earnedToday} / ${coin.cap}`;
+
+        renderCardGoal();
+        renderTemplates();
+    }
+
+    // --- 快捷记账 ---
+    function submitQuickEntry() {
+        const input = document.getElementById('lgrQuickInput');
+        if (!input) return;
+        const text = (input.value || '').trim();
+        if (!text) { input.focus(); return; }
+
+        const r = CyberCore.parseQuickEntry(text);
+        if (!r.ok) {
+            showToast(r.reason === 'no-amount'
+                ? '没读到金额，试试「午饭 25 微信」'
+                : '先写点什么，例如「午饭 25 微信」', 'warn', 3200);
+            return;
+        }
+
+        const tx = addTx({
+            type: r.type, amount: r.amount, cat: r.category,
+            account: r.account, note: r.note, src: 'quick'
+        });
+        if (!tx) { showToast('金额必须大于 0', 'warn'); return; }
+
+        input.value = '';
+        refreshLedgerUI();
+        showToast(
+            `已记 ${tx.type === 'income' ? '+' : '-'}${fmtMoney(tx.amount)} · ${tx.cat}（${tx.account}）`
+            + (r.guessedCategory ? ' · 没认出的分类按「购物」记了' : ''),
+            'success', 3200
+        );
+    }
+
+    function useTemplate(index) {
+        const t = LGR_TEMPLATES[index];
+        if (!t) return;
+        openLgrPrompt({
+            mode: 'amount',
+            title: `${t.note}花了多少？`,
+            message: `记入「${t.cat} · ${t.account}」，确认后直接入账。`,
+            onConfirm: (amount) => {
+                addTx({ type: 'expense', amount, cat: t.cat, account: t.account, note: t.note, src: 'template' });
+                refreshLedgerUI();
+                showToast(`已记 ${t.note} ${fmtMoney(amount)}`, 'success');
+            }
+        });
+    }
+
+    // --- 弹窗骨架 ---
+    let lgrTab = 'flows';
+    let lgrFlowType = 'all';
+    let lgrReportOffset = 0;
+    const lgrForm = { type: 'expense', cat: '餐饮', account: '微信' };
+
+    function openLedger(tab) {
+        switchLedgerTab(tab || 'flows');
+        document.getElementById('ledgerModal').classList.add('show');
+    }
+
+    function closeLedger() {
+        document.getElementById('ledgerModal').classList.remove('show');
+    }
+
+    function switchLedgerTab(tab, el) {
+        lgrTab = tab;
+        document.querySelectorAll('#ledgerModal .lgr-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === tab);
+        });
+        document.querySelectorAll('#ledgerModal .lgr-panel').forEach(p => {
+            p.classList.toggle('active', p.id === 'lgrPanel-' + tab);
+        });
+        renderLedgerPanel(tab);
+    }
+
+    function renderLedgerPanel(tab) {
+        if (tab === 'flows') renderFlowsPanel();
+        else if (tab === 'budget') renderBudgetPanel();
+        else if (tab === 'saving') renderSavingPanel();
+        else if (tab === 'report') renderReportPanel();
+        else if (tab === 'coin') renderCoinPanel();
+    }
+
+    // 任何写入之后：首页卡片 + 当前面板一起刷新
+    function refreshLedgerUI() {
+        renderLedgerCard();
+        const modal = document.getElementById('ledgerModal');
+        if (modal && modal.classList.contains('show')) renderLedgerPanel(lgrTab);
+    }
+
+    // --- 流水 ---
+    function catOptions(type, selected) {
+        const list = type === 'income' ? CyberCore.LEDGER_TAXONOMY.income : CyberCore.LEDGER_TAXONOMY.expense;
+        return list.map(c => `<option value="${c}"${c === selected ? ' selected' : ''}>${c}</option>`).join('');
+    }
+
+    function accountOptions(selected) {
+        return CyberCore.LEDGER_TAXONOMY.accounts
+            .map(a => `<option value="${a}"${a === selected ? ' selected' : ''}>${a}</option>`).join('');
+    }
+
+    function dayLabel(dateKey) {
+        const today = todayKey();
+        if (dateKey === today) return '今天';
+        if (dateKey === shiftDays(today, -1)) return '昨天';
+        const p = dateKey.split('-').map(Number);
+        const week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][new Date(p[0], p[1] - 1, p[2]).getDay()];
+        return `${p[1]} 月 ${p[2]} 日 · ${week}`;
+    }
+
+    function txRow(t) {
+        const income = t.type === 'income';
+        return `<div class="lgr-tx">
+            <span class="lgr-tx-cat">${lgrEsc(t.cat)}</span>
+            <span class="lgr-tx-note" title="${lgrEsc(t.note)}">${lgrEsc(t.note || t.cat)}</span>
+            <span class="lgr-tx-acc">${lgrEsc(t.account)}</span>
+            <span class="lgr-tx-amt ${income ? 'inc' : 'exp'}">${income ? '+' : '-'}${fmtMoney(t.amount)}</span>
+            <button class="lgr-tx-del" title="删除这笔" onclick="confirmDeleteTx('${t.id}')">×</button>
+        </div>`;
+    }
+
+    function renderFlowsPanel() {
+        const host = document.getElementById('lgrPanel-flows');
+        if (!host) return;
+
+        const monthKey = lgrMonth();
+        const s = lgrSummary(monthKey);
+        const [y, m] = monthKey.split('-');
+
+        const list = lgrData.tx
+            .filter(t => t.date.slice(0, 7) === monthKey)
+            .filter(t => lgrFlowType === 'all' || t.type === lgrFlowType)
+            .slice()
+            .sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
+
+        const groups = [];
+        list.forEach(t => {
+            const last = groups[groups.length - 1];
+            if (last && last.date === t.date) last.items.push(t);
+            else groups.push({ date: t.date, items: [t] });
+        });
+
+        host.innerHTML = `
+            <div class="lgr-stats">
+                <div class="lgr-stat"><span>本月支出</span><b class="exp">${fmtMoney(s.spent)}</b></div>
+                <div class="lgr-stat"><span>本月收入</span><b class="inc">${fmtMoney(s.income)}</b></div>
+                <div class="lgr-stat"><span>本月结余</span><b>${fmtMoney(s.net)}</b></div>
+            </div>
+
+            <div class="lgr-form">
+                <div class="lgr-seg" id="lgrFormSeg">
+                    <button class="${lgrForm.type === 'expense' ? 'active exp' : ''}" onclick="setEntryType('expense')">支出</button>
+                    <button class="${lgrForm.type === 'income' ? 'active' : ''}" onclick="setEntryType('income')">收入</button>
+                </div>
+                <input type="number" id="lgrFormAmount" step="0.01" min="0" placeholder="金额" inputmode="decimal">
+                <select id="lgrFormCat">${catOptions(lgrForm.type, lgrForm.cat)}</select>
+                <select id="lgrFormAccount">${accountOptions(lgrForm.account)}</select>
+                <input type="text" id="lgrFormNote" maxlength="40" placeholder="备注（选填）">
+                <input type="date" id="lgrFormDate" value="${todayKey()}">
+                <button class="btn-primary" onclick="saveManualEntry()">保存</button>
+            </div>
+
+            <div class="lgr-filter">
+                <button class="lgr-filter-btn ${lgrFlowType === 'all' ? 'active' : ''}" onclick="setLgrFlowType('all')">全部</button>
+                <button class="lgr-filter-btn ${lgrFlowType === 'expense' ? 'active' : ''}" onclick="setLgrFlowType('expense')">支出</button>
+                <button class="lgr-filter-btn ${lgrFlowType === 'income' ? 'active' : ''}" onclick="setLgrFlowType('income')">收入</button>
+                <span class="lgr-filter-month">${y} 年 ${Number(m)} 月 · ${list.length} 笔</span>
+            </div>
+
+            ${groups.length ? groups.map(g => {
+                const sum = g.items.reduce((acc, t) => acc + (t.type === 'income' ? t.amount : -t.amount), 0);
+                return `<div class="lgr-day-head"><span>${dayLabel(g.date)}</span><span>${sum >= 0 ? '+' : ''}${fmtMoney(sum)}</span></div>`
+                    + g.items.map(txRow).join('');
+            }).join('') : `<div class="lgr-empty">这个月还没有记录<br>在首页试一句「午饭 25 微信」，或直接用上面的表单</div>`}
+        `;
+    }
+
+    function setLgrFlowType(type) {
+        lgrFlowType = type;
+        renderFlowsPanel();
+    }
+
+    // 只重画分段控件和分类下拉，避免把已输入的金额清掉
+    function setEntryType(type) {
+        lgrForm.type = type;
+        lgrForm.cat = type === 'income' ? CyberCore.LEDGER_TAXONOMY.income[0] : CyberCore.LEDGER_TAXONOMY.expense[0];
+
+        const seg = document.getElementById('lgrFormSeg');
+        if (seg) {
+            seg.innerHTML = `
+                <button class="${type === 'expense' ? 'active exp' : ''}" onclick="setEntryType('expense')">支出</button>
+                <button class="${type === 'income' ? 'active' : ''}" onclick="setEntryType('income')">收入</button>`;
+        }
+        const sel = document.getElementById('lgrFormCat');
+        if (sel) sel.innerHTML = catOptions(type, lgrForm.cat);
+    }
+
+    function saveManualEntry() {
+        const amount = Number(document.getElementById('lgrFormAmount').value);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            showToast('金额要大于 0', 'warn');
+            return;
+        }
+        const cat = document.getElementById('lgrFormCat').value;
+        const account = document.getElementById('lgrFormAccount').value;
+        const note = document.getElementById('lgrFormNote').value.trim();
+        const date = document.getElementById('lgrFormDate').value || todayKey();
+
+        lgrForm.cat = cat;
+        lgrForm.account = account;
+        addTx({ type: lgrForm.type, amount, cat, account, note, date, src: 'manual' });
+
+        renderFlowsPanel();
+        renderLedgerCard();
+        showToast(`已记 ${cat} ${fmtMoney(amount)}` + (date.slice(0, 7) !== lgrMonth() ? `（记在 ${date.slice(0, 7)}）` : ''), 'success');
+    }
+
+    function confirmDeleteTx(id) {
+        const t = lgrData.tx.find(x => x.id === id);
+        if (!t) return;
+        openLgrPrompt({
+            mode: 'confirm',
+            title: '删除这笔记录？',
+            message: `${t.date} ${t.cat} ${fmtMoney(t.amount)}${t.note ? '（' + t.note + '）' : ''}`
+                + (t.goalId ? '。这笔是攒钱目标存入，删除后目标进度会一起回退。' : '。删除后预算与周报会同步更新。'),
+            onConfirm: () => {
+                const i = lgrData.tx.findIndex(x => x.id === id);
+                if (i < 0) return;
+                lgrData.tx.splice(i, 1);
+                if (t.goalId) {
+                    const g = lgrData.goals.find(x => x.id === t.goalId);
+                    if (g) g.saved = Math.max(0, Math.round((g.saved - t.amount) * 100) / 100);
+                }
+                saveLedger();
+                refreshLedgerUI();
+                showToast('已删除这笔记录', 'info');
+            }
+        });
+    }
+
+    // --- 预算 ---
+    function catRow(c, b, s) {
+        const budget = Number(b.cats[c]) || 0;
+        const spent = s.spentByCat[c] || 0;
+        const ratio = budget > 0 ? spent / budget : 0;
+        const width = Math.min(100, Math.round(ratio * 100));
+        const cls = ratio > 1 ? 'over' : (ratio >= 0.8 ? 'warn' : '');
+        return `<div class="lgr-cat-row">
+            <span class="lgr-cat-name">${lgrEsc(c)}</span>
+            <input type="number" min="0" step="10" data-cat="${lgrEsc(c)}" value="${budget || ''}" placeholder="0">
+            <div class="lgr-cat-bar"><i class="${cls}" style="width:${width}%"></i></div>
+            <span class="lgr-cat-spent ${ratio > 1 ? 'over' : ''}">${fmtMoney(spent)} / ${budget ? fmtMoney(budget) : '—'}</span>
+        </div>`;
+    }
+
+    function renderBudgetPanel() {
+        const host = document.getElementById('lgrPanel-budget');
+        if (!host) return;
+
+        const monthKey = lgrMonth();
+        const b = lgrBudget(monthKey);
+        const s = lgrSummary(monthKey);
+        const cats = CyberCore.LEDGER_TAXONOMY.expense;
+        const allocated = cats.reduce((sum, c) => sum + (Number(b.cats[c]) || 0), 0);
+        const rest = Math.round((b.total - allocated) * 100) / 100;
+
+        host.innerHTML = `
+            <div class="lgr-block">
+                <div class="lgr-block-title">总预算（本月生活费）<small>${monthKey}</small></div>
+                <div class="lgr-inline">
+                    <input type="number" id="lgrTotalBudget" min="0" step="10" value="${b.total || ''}" placeholder="如 2000">
+                    <button class="btn-primary" onclick="saveBudgetTotal()">保存</button>
+                </div>
+                <p class="lgr-hint">
+                    已花 ${fmtMoney(s.spent)}，剩余 ${fmtMoney(s.remaining)}；本月还剩 ${s.daysLeft} 天，
+                    今天建议可花 ${s.hasBudget ? fmtMoney(s.spendable) : '—'}（已先把还没存完的储蓄额度预留出来）。
+                </p>
+            </div>
+
+            <div class="lgr-block">
+                <div class="lgr-block-title">
+                    分类预算
+                    <small>${rest >= 0 ? '未分配 ' + fmtMoney(rest) : '超分配 ' + fmtMoney(-rest)}</small>
+                </div>
+                ${cats.map(c => catRow(c, b, s)).join('')}
+                <button class="btn-primary" style="margin-top:14px;" onclick="saveBudgetCats()">保存分类预算</button>
+                <p class="lgr-hint">分类预算加起来不必等于总预算；「储蓄」这一栏就是本月打算存多少，攒钱时记的流水会自动算进来。</p>
+            </div>
+        `;
+    }
+
+    function saveBudgetTotal() {
+        const v = Number(document.getElementById('lgrTotalBudget').value);
+        const monthKey = lgrMonth();
+        const b = ensureBudget(monthKey);
+        b.total = Number.isFinite(v) && v > 0 ? Math.round(v * 100) / 100 : 0;
+        saveLedger();
+        renderBudgetPanel();
+        renderLedgerCard();
+        showToast(b.total ? `本月总预算 ${fmtMoney(b.total)}` : '已清空本月总预算', 'success');
+    }
+
+    function saveBudgetCats() {
+        const monthKey = lgrMonth();
+        const b = ensureBudget(monthKey);
+        const inputs = document.querySelectorAll('#lgrPanel-budget .lgr-cat-row input[data-cat]');
+        inputs.forEach(input => {
+            const cat = input.dataset.cat;
+            const v = Number(input.value);
+            b.cats[cat] = Number.isFinite(v) && v > 0 ? Math.round(v * 100) / 100 : 0;
+        });
+        saveLedger();
+        renderBudgetPanel();
+        renderLedgerCard();
+        showToast('分类预算已保存', 'success');
+    }
+
+    // --- 攒钱 ---
+    function goalCard(g) {
+        const p = CyberCore.calcGoalProgress(g, todayKey());
+        const deadlineText = !g.deadline ? '未设截止日'
+            : p.overdue ? `已过期 ${Math.abs(p.daysLeft)} 天`
+                : `剩 ${p.daysLeft} 天`;
+        return `<div class="lgr-goal-card ${p.done ? 'done' : ''}">
+            <div class="lgr-goal-line">
+                <span class="lgr-goal-title">${lgrEsc(g.name)}${p.done ? ' · 已达成 🎉' : ''}</span>
+                <span class="lgr-goal-pct">${p.pct}%</span>
+            </div>
+            <div class="lgr-bar"><i style="width:${p.pct}%"></i></div>
+            <div class="lgr-goal-meta">
+                <span>已存 ${fmtMoney(p.saved)} / ${fmtMoney(p.target)}</span>
+                <span>还差 ${fmtMoney(p.remaining)}</span>
+                <span>${deadlineText}</span>
+                ${p.weeklySuggest ? `<span>每周建议存 ${fmtMoney(p.weeklySuggest)}</span>` : ''}
+            </div>
+            <div class="lgr-goal-actions">
+                <button class="btn-primary" onclick="depositGoal('${g.id}')" ${p.done ? 'disabled' : ''}>存一笔</button>
+                <button class="btn-sec" onclick="deleteGoal('${g.id}')">删除</button>
+            </div>
+        </div>`;
+    }
+
+    function renderSavingPanel() {
+        const host = document.getElementById('lgrPanel-saving');
+        if (!host) return;
+        const st = lgrData.settings;
+
+        host.innerHTML = `
+            <div class="lgr-block">
+                <div class="lgr-block-title">新建攒钱目标</div>
+                <div class="lgr-goal-form">
+                    <input type="text" id="lgrGoalName" maxlength="20" placeholder="目标名称，如 相机">
+                    <input type="number" id="lgrGoalTarget" min="1" step="10" placeholder="目标金额">
+                    <input type="date" id="lgrGoalDeadline">
+                    <button class="btn-primary" onclick="createGoal()">创建</button>
+                </div>
+                <p class="lgr-hint">
+                    每存一笔都会记一条「储蓄」流水，同时推进目标进度；本周存钱每满 ${st.saveStep} 元奖励 ${st.saveCoins} 币。
+                    只做「存钱奖励币」和「币换特权」，不做「币换钱」。
+                </p>
+            </div>
+            ${lgrData.goals.length
+                ? lgrData.goals.map(goalCard).join('')
+                : '<div class="lgr-empty">还没有攒钱目标<br>把想买的东西写下来，比留在购物车里省钱</div>'}
+        `;
+    }
+
+    function createGoal() {
+        const name = document.getElementById('lgrGoalName').value.trim();
+        const target = Number(document.getElementById('lgrGoalTarget').value);
+        const deadline = document.getElementById('lgrGoalDeadline').value;
+
+        if (!name) { showToast('先给目标起个名字', 'warn'); return; }
+        if (!Number.isFinite(target) || target <= 0) { showToast('目标金额要大于 0', 'warn'); return; }
+
+        lgrData.goals.push({
+            id: 'g' + Date.now().toString(36),
+            name: name.slice(0, 20),
+            target: Math.round(target * 100) / 100,
+            saved: 0,
+            deadline: deadline || '',
+            createdAt: todayKey()
+        });
+        saveLedger();
+        refreshLedgerUI();
+        showToast(`目标「${name}」已创建`, 'success');
+    }
+
+    function depositGoal(goalId) {
+        const g = lgrData.goals.find(x => x.id === goalId);
+        if (!g) return;
+
+        const p = CyberCore.calcGoalProgress(g, todayKey());
+        openLgrPrompt({
+            mode: 'amount',
+            title: `为「${g.name}」存一笔`,
+            message: `还差 ${fmtMoney(p.remaining)}${p.weeklySuggest ? `，本周建议存 ${fmtMoney(p.weeklySuggest)}` : ''}。`
+                + '确认后会记一笔「储蓄」流水并推进进度。',
+            value: p.weeklySuggest || '',
+            onConfirm: (amount) => {
+                addTx({
+                    type: 'expense', amount, cat: '储蓄', account: '银行卡',
+                    note: `存钱·${g.name}`, src: 'goal', goalId: g.id
+                });
+                g.saved = Math.round((g.saved + amount) * 100) / 100;
+                saveLedger();
+                awardSaveCoins();   // 只有真存钱才发奖励币，且按周台阶去重
+                refreshLedgerUI();
+                showToast(`已存 ${fmtMoney(amount)} 进「${g.name}」`, 'success');
+            }
+        });
+    }
+
+    function deleteGoal(goalId) {
+        const g = lgrData.goals.find(x => x.id === goalId);
+        if (!g) return;
+        openLgrPrompt({
+            mode: 'confirm',
+            title: `删除目标「${g.name}」？`,
+            message: '已经存进去的钱不会退回（对应的「储蓄」流水还在账上），只是不再跟踪这个目标。',
+            onConfirm: () => {
+                lgrData.goals = lgrData.goals.filter(x => x.id !== goalId);
+                saveLedger();
+                refreshLedgerUI();
+                showToast('目标已删除', 'info');
+            }
+        });
+    }
+
+    // --- 周报 ---
+    function kv(k, v) {
+        return `<div class="lgr-kv"><span>${lgrEsc(k)}</span><b>${v}</b></div>`;
+    }
+
+    function shiftReportWeek(delta) {
+        lgrReportOffset = Math.max(0, lgrReportOffset + delta);
+        renderReportPanel();
+    }
+
+    function renderReportPanel() {
+        const host = document.getElementById('lgrPanel-report');
+        if (!host) return;
+
+        const today = todayKey();
+        const base = shiftDays(today, -7 * lgrReportOffset);
+        const week = CyberCore.weekRange(base);
+        const r = CyberCore.buildWeeklyReport({
+            tx: lgrData.tx,
+            coinTx: lgrData.coinTx,
+            budget: lgrBudget(week.start.slice(0, 7)),
+            goals: lgrData.goals,
+            tasks: allTasks,
+            weekStart: week.start,
+            weekEnd: week.end,
+            todayKey: today,
+            dailyCap: lgrData.settings.dailyCap
+        });
+
+        const overspentText = r.money.overspentTop.length
+            ? r.money.overspentTop.map(o => `${lgrEsc(o.cat)} +${Math.round(o.over)}`).join('、')
+            : '无';
+
+        host.innerHTML = `
+            <div class="lgr-week-nav">
+                <button onclick="shiftReportWeek(1)">‹ 上一周</button>
+                <span class="lgr-week-label">${week.label}${lgrReportOffset === 0 ? '（本周）' : ''}</span>
+                <button onclick="shiftReportWeek(-1)" ${lgrReportOffset === 0 ? 'disabled style="opacity:.35"' : ''}>下一周 ›</button>
+            </div>
+
+            <div class="lgr-report-grid">
+                <div class="lgr-report-card">
+                    <h4>💸 钱账</h4>
+                    ${kv('收入', fmtMoney(r.money.income))}
+                    ${kv('支出', fmtMoney(r.money.expense))}
+                    ${kv('结余', fmtMoney(r.money.net))}
+                    ${kv('超支 Top3', overspentText)}
+                </div>
+                <div class="lgr-report-card">
+                    <h4>⏱ 时间账</h4>
+                    ${kv('番茄总数', r.time.pomodoros + ' 个')}
+                    ${kv('专注时长', r.time.minutes + ' 分钟')}
+                    ${kv('专注天数', r.time.days + ' 天')}
+                    ${r.time.byTask.length
+                        ? r.time.byTask.map(t => kv(t.name, `${t.minutes} 分钟 · ${t.pct}%`)).join('')
+                        : kv('投入分布', '暂无')}
+                </div>
+                <div class="lgr-report-card">
+                    <h4>🪙 币账</h4>
+                    ${kv('本周获得', r.coin.earned + ' 币')}
+                    ${kv('本周兑换', r.coin.spent + ' 币')}
+                    ${kv('币余额', r.coin.balance + ' 币')}
+                </div>
+                <div class="lgr-report-card">
+                    <h4>📝 计划账</h4>
+                    ${kv(r.plan.scope === 'week' ? '本周目标' : '今日计划', `${r.plan.done} / ${r.plan.total}`)}
+                    ${kv('完成度', r.plan.rate + '%')}
+                    ${kv('学习投入', fmtMoney(r.plan.studySpend))}
+                </div>
+                <div class="lgr-report-card">
+                    <h4>🎯 攒钱账</h4>
+                    ${kv('本周存入', fmtMoney(r.saving.weekSaved))}
+                    ${r.saving.goalName ? kv('目标进度', `${lgrEsc(r.saving.goalName)} ${r.saving.pct}%`) : kv('攒钱目标', '未设置')}
+                    ${r.saving.weeklySuggest ? kv('建议周存', fmtMoney(r.saving.weeklySuggest)) : ''}
+                </div>
+            </div>
+
+            <div class="lgr-quote">${lgrEsc(r.summary)}</div>
+
+            <div class="lgr-block">
+                <div class="lgr-block-title">下周建议</div>
+                <ul class="lgr-advice">${r.advice.map(a => `<li>${lgrEsc(a)}</li>`).join('')}</ul>
+            </div>
+        `;
+    }
+
+    // --- 番茄币 ---
+    function shopItem(item, coin) {
+        const can = coin.balance >= item.cost;
+        const times = Number(lgrData.redeemed[item.id]) || 0;
+        return `<div class="lgr-shop-item">
+            <span class="lgr-shop-emoji">${item.emoji}</span>
+            <span class="lgr-shop-name">${lgrEsc(item.name)}</span>
+            <span class="lgr-shop-cost">${item.cost} 币${times ? ` · 已兑 ${times} 次` : ''}</span>
+            ${item.spend ? `<span class="lgr-shop-note">兑换时同记一笔 ${item.spend.cat} 支出</span>` : '<span class="lgr-shop-note">特权兑换，不动钱</span>'}
+            <button class="lgr-shop-btn" onclick="redeemCoin('${item.id}')" ${can ? '' : 'disabled'}>
+                ${can ? '兑换' : `还差 ${Math.ceil(item.cost - coin.balance)} 币`}
+            </button>
+        </div>`;
+    }
+
+    function coinRow(c) {
+        const up = c.delta > 0;
+        const kindText = { pomodoro: '番茄完成', save: '存钱奖励', redeem: '兑换' }[c.kind] || '调整';
+        const detail = [c.reason, c.minutes ? `${c.minutes} 分钟` : '', c.taskText ? c.taskText : '']
+            .filter(Boolean).join(' · ');
+        return `<div class="lgr-tx">
+            <span class="lgr-tx-cat">${kindText}</span>
+            <span class="lgr-tx-note" title="${lgrEsc(detail)}">${lgrEsc(detail)}</span>
+            <span class="lgr-tx-acc">${lgrEsc(c.date.slice(5))}</span>
+            <span class="lgr-tx-amt ${up ? 'inc' : 'exp'}">${up ? '+' : '-'}${Math.abs(c.delta)}</span>
+        </div>`;
+    }
+
+    function renderCoinPanel() {
+        const host = document.getElementById('lgrPanel-coin');
+        if (!host) return;
+
+        const st = lgrData.settings;
+        const coin = lgrCoin();
+        const week = CyberCore.weekRange(todayKey());
+        let weekEarn = 0;
+        let weekSpend = 0;
+        lgrData.coinTx.forEach(c => {
+            if (c.date < week.start || c.date > week.end) return;
+            if (c.delta > 0) weekEarn += c.delta; else weekSpend += -c.delta;
+        });
+
+        const list = lgrData.coinTx.slice()
+            .sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts)
+            .slice(0, 20);
+
+        host.innerHTML = `
+            <div class="lgr-coin-hero">
+                <div>
+                    <div class="lgr-coin-num">${coin.balance}</div>
+                    <div class="lgr-coin-sub">当前番茄币</div>
+                </div>
+                <div class="lgr-coin-sub">
+                    今日 +${coin.earnedToday} / ${coin.cap}（每日上限）<br>
+                    本周 +${weekEarn}，兑换 -${weekSpend}<br>
+                    累计获得 ${coin.earnedTotal}，累计消耗 ${coin.spentTotal}
+                </div>
+            </div>
+
+            <div class="lgr-block">
+                <div class="lgr-block-title">规则</div>
+                <div class="lgr-rule">
+                    · <b>1 个完成的番茄 = 1 枚番茄币</b>，只有自然走完的番茄算，暂停 / 中断 / 重置都不计<br>
+                    · 每日最多获得 <b>${coin.cap} 枚</b>，单次专注不足 <b>${st.minMinutes} 分钟</b> 不发币<br>
+                    · 番茄币<b>不是钱</b>，只兑换特权与娱乐额度；兑换真实消费会同时记一笔支出<br>
+                    · 唯一额外的发放渠道：本周存钱每满 <b>${st.saveStep} 元</b> 奖励 <b>${st.saveCoins} 枚</b>
+                </div>
+            </div>
+
+            <div class="lgr-block">
+                <div class="lgr-block-title">兑换商店 <small>余额 ${coin.balance} 币</small></div>
+                <div class="lgr-shop">${LGR_SHOP.map(item => shopItem(item, coin)).join('')}</div>
+            </div>
+
+            <div class="lgr-block">
+                <div class="lgr-block-title">币流水 <small>最近 ${list.length} 条</small></div>
+                ${list.length ? list.map(coinRow).join('') : '<div class="lgr-empty">还没有币的进出记录<br>完成一个番茄就会出现在这里</div>'}
+            </div>
+        `;
+    }
+
+    function redeemCoin(itemId) {
+        const item = LGR_SHOP.find(x => x.id === itemId);
+        if (!item) return;
+
+        const coin = lgrCoin();
+        if (coin.balance < item.cost) {
+            showToast('番茄币不够，再完成几个番茄吧', 'warn');
+            return;
+        }
+
+        const doRedeem = (amount) => {
+            pushCoin({
+                delta: -item.cost, kind: 'redeem',
+                cost: item.cost, reason: `兑换：${item.name}`
+            });
+            lgrData.redeemed[item.id] = (Number(lgrData.redeemed[item.id]) || 0) + 1;
+
+            let extra = '';
+            if (item.spend && amount > 0) {
+                addTx({
+                    type: 'expense', amount, cat: item.spend.cat,
+                    account: item.spend.account, note: `番茄币兑换：${item.name}`, src: 'redeem'
+                });
+                extra = `，同时记了一笔 ${item.spend.cat} ${fmtMoney(amount)} 支出`;
+            }
+
+            saveLedger();
+            refreshLedgerUI();
+            showToast(`已兑换「${item.name}」，消耗 ${item.cost} 币${extra}`, 'success', 3600);
+        };
+
+        if (item.spend) {
+            // 换奶茶是真的花钱：币扣一次、钱也记一笔，账实才对得上
+            openLgrPrompt({
+                mode: 'amount',
+                title: `兑换「${item.name}」`,
+                message: `消耗 ${item.cost} 币。这杯是要花钱的，确认金额后会同时记一笔「${item.spend.cat}」支出（默认 ${fmtMoney(item.spend.amount)}）。`,
+                value: item.spend.amount,
+                onConfirm: doRedeem
+            });
+        } else {
+            openLgrPrompt({
+                mode: 'confirm',
+                title: `兑换「${item.name}」`,
+                message: `消耗 ${item.cost} 币，兑换后余额 ${coin.balance - item.cost} 币。番茄币不是钱，这笔兑换不产生支出记录。`,
+                onConfirm: () => doRedeem(0)
+            });
+        }
+    }
+
+    // --- 设置面板里记账相关字段的回显 / 保存 ---
+    function syncLedgerSettingsInputs() {
+        const st = lgrData.settings;
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+        setVal('cfgCoinCap', st.dailyCap);
+        setVal('cfgCoinMinMinutes', st.minMinutes);
+        setVal('cfgSaveStep', st.saveStep);
+        setVal('cfgSaveCoins', st.saveCoins);
+        const chk = document.getElementById('chk-coinEnabled');
+        if (chk) chk.checked = st.coinEnabled;
+    }
+
+    function saveLedgerSettings() {
+        const st = lgrData.settings;
+        st.dailyCap = clampInt(document.getElementById('cfgCoinCap').value, 0, 100, LGR_DEFAULT_SETTINGS.dailyCap);
+        st.minMinutes = clampInt(document.getElementById('cfgCoinMinMinutes').value, 0, 60, LGR_DEFAULT_SETTINGS.minMinutes);
+        st.saveStep = clampInt(document.getElementById('cfgSaveStep').value, 1, 10000, LGR_DEFAULT_SETTINGS.saveStep);
+        st.saveCoins = clampInt(document.getElementById('cfgSaveCoins').value, 1, 1000, LGR_DEFAULT_SETTINGS.saveCoins);
+        st.coinEnabled = !!document.getElementById('chk-coinEnabled').checked;
+
+        saveLedger();
+        syncLedgerSettingsInputs();
+        refreshLedgerUI();
+        showToast('番茄币规则已保存', 'success');
     }
 
     // --- 9. 多源热点资讯逻辑 (Multi-Source Trends) ---
@@ -5615,6 +7077,7 @@
             topModal.classList.remove('show');
             // ESC 关闭也要同步清理内部状态，保持「关闭状态 = 状态已重置」
             if (topModal.id === 'addToDayModal') pendingAddToDay = null;
+            if (topModal.id === 'lgrPromptModal') lgrPromptState = null;
             // 如果关闭的是设置弹窗，按需刷新热榜（数据源没变就不动）
             if (topModal.id === 'configModal') {
                 syncTrendTabsIfChanged();
@@ -5670,6 +7133,7 @@
     // 带 group 参数（程序化投递）按指定分组静默落库；不带 group（插件人工点击）弹预填确认框
     consumeNavAddHash();
     window.addEventListener('hashchange', consumeNavAddHash);
+    renderLedgerCard(); // 记账卡片（本月剩余 / 今日可花 / 超支分类 / 番茄币 / 攒钱）
 
     setInterval(() => {
         fetchWeather(weatherConfig.adcode, weatherConfig.city);

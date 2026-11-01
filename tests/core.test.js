@@ -284,6 +284,289 @@ test('deadlineStr 为空 → 落到 normal 并显示 Invalid Date（已知缺陷
     assert.strictEqual(r.text, 'Invalid Date');
 });
 
+// --- 4. parseQuickEntry --------------------------------------------------
+// 一句话记账是记账入口的主路径，解析错了会让钱账整月歪掉，规则必须钉死。
+group('[4] parseQuickEntry —— 一句话记账');
+
+test('「午饭 25 微信」→ 支出/25/餐饮/微信/备注午饭', () => {
+    assert.deepStrictEqual(core.parseQuickEntry('午饭 25 微信'), {
+        ok: true, type: 'expense', amount: 25, category: '餐饮',
+        account: '微信', note: '午饭', guessedCategory: false
+    });
+});
+
+test('没写账户 → 默认微信', () => {
+    const r = core.parseQuickEntry('奶茶 15');
+    assert.strictEqual(r.account, '微信');
+    assert.strictEqual(r.category, '餐饮');
+});
+
+test('「2 杯」不是金额，取后面那个', () => {
+    const r = core.parseQuickEntry('奶茶 2杯 30');
+    assert.strictEqual(r.amount, 30);
+});
+
+test('「5月1日 聚餐 200」跳过日期数字', () => {
+    const r = core.parseQuickEntry('5月1日 聚餐 200');
+    assert.strictEqual(r.amount, 200);
+    assert.strictEqual(r.category, '社交');
+});
+
+test('带「元」的小数金额', () => {
+    const r = core.parseQuickEntry('打印 0.5 元 校园卡');
+    assert.strictEqual(r.amount, 0.5);
+    assert.strictEqual(r.account, '校园卡');
+    assert.strictEqual(r.category, '学习');
+});
+
+test('「收红包」是收入，但「发红包」是社交支出', () => {
+    assert.strictEqual(core.parseQuickEntry('收红包 200').type, 'income');
+    const out = core.parseQuickEntry('发红包 50');
+    assert.strictEqual(out.type, 'expense');
+    assert.strictEqual(out.category, '社交');
+});
+
+test('「生活 费 1500 银行卡」手输空格也能认出收入', () => {
+    const r = core.parseQuickEntry('生活 费 1500 银行卡');
+    assert.strictEqual(r.type, 'income');
+    assert.strictEqual(r.category, '生活费');
+});
+
+test('「存钱 100」归储蓄分类', () => {
+    assert.strictEqual(core.parseQuickEntry('存钱 100 银行卡').category, '储蓄');
+});
+
+test('没有金额 → ok:false，不瞎猜金额', () => {
+    const r = core.parseQuickEntry('午饭');
+    assert.strictEqual(r.ok, false);
+    assert.strictEqual(r.reason, 'no-amount');
+});
+
+test('空串 → ok:false / empty', () => {
+    assert.deepStrictEqual(core.parseQuickEntry('   '), { ok: false, reason: 'empty' });
+});
+
+test('完全不认识的词 → 归购物并标记 guessedCategory', () => {
+    const r = core.parseQuickEntry('xxxx 12');
+    assert.strictEqual(r.category, '购物');
+    assert.strictEqual(r.guessedCategory, true);
+});
+
+// --- 5. calcBudgetSummary ------------------------------------------------
+group('[5] calcBudgetSummary —— 月度预算口径');
+
+const budgetFixture = () => ({
+    tx: [
+        { type: 'expense', amount: 600, cat: '餐饮', date: '2026-11-03' },
+        { type: 'expense', amount: 100, cat: '储蓄', date: '2026-11-02' },
+        { type: 'expense', amount: 20, cat: '交通', date: '2026-10-31' }, // 上月，不计
+        { type: 'income', amount: 2000, date: '2026-11-01' }
+    ],
+    budget: { total: 1500, cats: { 餐饮: 500, 储蓄: 200 } },
+    monthKey: '2026-11',
+    todayKey: '2026-11-15'
+});
+
+test('本月剩余 = 总预算 − 本月支出（含储蓄）', () => {
+    const r = core.calcBudgetSummary(budgetFixture());
+    assert.strictEqual(r.spent, 700);
+    assert.strictEqual(r.remaining, 800);
+    assert.strictEqual(r.income, 2000);
+});
+
+test('上月流水不混进本月', () => {
+    const r = core.calcBudgetSummary(budgetFixture());
+    assert.strictEqual(r.spentByCat['交通'], 0);
+});
+
+test('今日可花 = (剩余 − 未存完的储蓄预算) / 剩余天数', () => {
+    const r = core.calcBudgetSummary(budgetFixture());
+    // 剩余 800，储蓄预算 200 已存 100 → 预留 100；11 月 15 日还剩 16 天
+    assert.strictEqual(r.savingReserve, 100);
+    assert.strictEqual(r.daysLeft, 16);
+    assert.strictEqual(r.spendable, 43.75);
+});
+
+test('超支分类只列真正超了的，且不含储蓄', () => {
+    const r = core.calcBudgetSummary(budgetFixture());
+    assert.deepStrictEqual(r.overspent.map(o => o.cat), ['餐饮']);
+    assert.strictEqual(r.overspent[0].over, 100);
+});
+
+test('没设预算 → hasBudget false，可花为 0（不出现负零花）', () => {
+    const r = core.calcBudgetSummary({ tx: [], budget: {}, monthKey: '2026-11', todayKey: '2026-11-01' });
+    assert.strictEqual(r.hasBudget, false);
+    assert.strictEqual(r.spendable, 0);
+});
+
+test('脏数据（amount 非数字 / null 条目）不参与计算也不抛错', () => {
+    const r = core.calcBudgetSummary({
+        tx: [null, { type: 'expense', amount: 'abc', date: '2026-11-03' }, { type: 'expense', amount: 10, cat: '餐饮', date: '2026-11-03' }],
+        budget: { total: 100, cats: {} }, monthKey: '2026-11', todayKey: '2026-11-03'
+    });
+    assert.strictEqual(r.spent, 10);
+    assert.strictEqual(r.count, 1);
+});
+
+// --- 6. 番茄币 ------------------------------------------------------------
+group('[6] calcCoinState / nextSaveReward —— 注意力货币');
+
+test('余额由流水累加，不单独存字段', () => {
+    const r = core.calcCoinState([
+        { delta: 1, date: '2026-11-01' }, { delta: 1, date: '2026-11-01' },
+        { delta: -30, date: '2026-11-02' }, { delta: 1, date: '2026-11-02' }
+    ], '2026-11-01', 20);
+    assert.strictEqual(r.balance, 0); // 强制不出现负余额
+    assert.strictEqual(r.earnedTotal, 3);
+    assert.strictEqual(r.spentTotal, 30);
+});
+
+test('今日获得与上限', () => {
+    const tx = [];
+    for (let i = 0; i < 22; i++) tx.push({ delta: 1, date: '2026-11-01' });
+    const r = core.calcCoinState(tx, '2026-11-01', 20);
+    assert.strictEqual(r.earnedToday, 22); // 上限由发币侧拦截，这里只如实统计
+    assert.strictEqual(r.remainingToday, 0);
+});
+
+test('每存 50 元奖 5 币：跨两个台阶一次补 10 币', () => {
+    const r = core.nextSaveReward({ weekSaved: 120, step: 50, coins: 5, awarded: 0 });
+    assert.strictEqual(r.milestone, 2);
+    assert.strictEqual(r.award, 10);
+});
+
+test('已发过的台阶不重复发', () => {
+    const r = core.nextSaveReward({ weekSaved: 120, step: 50, coins: 5, awarded: 2 });
+    assert.strictEqual(r.award, 0);
+    assert.strictEqual(r.nextAt, 150);
+});
+
+// --- 7. calcGoalProgress -------------------------------------------------
+group('[7] calcGoalProgress —— 攒钱目标');
+
+test('进度、剩余、每周建议存额', () => {
+    const r = core.calcGoalProgress(
+        { name: '相机', target: 1000, saved: 350, deadline: '2027-02-01', createdAt: '2026-10-01' },
+        '2026-11-01'
+    );
+    assert.strictEqual(r.pct, 35);
+    assert.strictEqual(r.remaining, 650);
+    assert.strictEqual(r.weeksLeft, 14);
+    assert.strictEqual(r.weeklySuggest, 47); // ceil(650/14)
+    assert.strictEqual(r.expectedPct, 25);
+    assert.strictEqual(r.done, false);
+});
+
+test('目标金额为 0 不产生 NaN / Infinity', () => {
+    const r = core.calcGoalProgress({ name: 'x', target: 0, saved: 0 }, '2026-11-01');
+    assert.strictEqual(r.pct, 0);
+    assert.strictEqual(r.weeklySuggest, 0);
+});
+
+test('超额存入封顶 100%', () => {
+    const r = core.calcGoalProgress({ target: 100, saved: 150 }, '2026-11-01');
+    assert.strictEqual(r.pct, 100);
+    assert.strictEqual(r.done, true);
+});
+
+// --- 8. buildWeeklyReport ------------------------------------------------
+group('[8] buildWeeklyReport —— 三账复盘');
+
+const reportInput = () => ({
+    tx: [
+        { type: 'expense', amount: 600, cat: '餐饮', date: '2026-10-28' },
+        { type: 'expense', amount: 60, cat: '学习', date: '2026-10-29' },
+        { type: 'expense', amount: 200, cat: '储蓄', date: '2026-10-30' },
+        { type: 'income', amount: 1500, date: '2026-10-26' }
+    ],
+    coinTx: [
+        { delta: 1, kind: 'pomodoro', date: '2026-10-28', minutes: 25, taskText: '写论文' },
+        { delta: 1, kind: 'pomodoro', date: '2026-10-29', minutes: 25, taskText: '写论文' },
+        { delta: 1, kind: 'pomodoro', date: '2026-10-30', minutes: 10, taskText: '背单词' },
+        { delta: 5, kind: 'save', date: '2026-10-30' },
+        { delta: -30, kind: 'redeem', date: '2026-10-31' }
+    ],
+    budget: { total: 2000, cats: { 餐饮: 800, 学习: 200, 储蓄: 400 } }, // 11 月 30 天
+    goals: [{ name: '相机', target: 1000, saved: 350, deadline: '2027-02-01', createdAt: '2026-10-01' }],
+    tasks: [{ type: 'week', done: true }, { type: 'week', done: false }],
+    weekStart: '2026-10-26', weekEnd: '2026-11-01', todayKey: '2026-11-01', dailyCap: 20
+});
+
+test('钱账：收入 / 支出 / 结余', () => {
+    const r = core.buildWeeklyReport(reportInput());
+    assert.strictEqual(r.money.income, 1500);
+    assert.strictEqual(r.money.expense, 860);
+    assert.strictEqual(r.money.net, 640);
+});
+
+test('超支按「周配额」判，储蓄不进超支榜', () => {
+    const r = core.buildWeeklyReport(reportInput());
+    // 这一周从 10-26 起算 → 按 10 月 31 天折算：800×7/31 ≈ 180.6 → 181；本周 600 → 超支
+    assert.strictEqual(r.money.overspentTop[0].cat, '餐饮');
+    assert.strictEqual(r.money.overspentTop[0].quota, 181);
+    assert.ok(!r.money.overspentTop.some(o => o.cat === '储蓄'));
+});
+
+test('时间账：番茄数 / 分钟 / 按计划的分布', () => {
+    const r = core.buildWeeklyReport(reportInput());
+    assert.strictEqual(r.time.pomodoros, 3);
+    assert.strictEqual(r.time.minutes, 60);
+    assert.strictEqual(r.time.byTask[0].name, '写论文');
+    assert.strictEqual(r.time.byTask[0].pct, 83);
+});
+
+test('币账：获得含存钱奖励，消耗与余额分列', () => {
+    const r = core.buildWeeklyReport(reportInput());
+    assert.strictEqual(r.coin.earned, 8); // 3 番茄 + 5 存钱奖励
+    assert.strictEqual(r.coin.spent, 30);
+});
+
+test('计划账：本周目标完成度 + 学习投入', () => {
+    const r = core.buildWeeklyReport(reportInput());
+    assert.strictEqual(r.plan.rate, 50);
+    assert.strictEqual(r.plan.studySpend, 60);
+});
+
+test('攒钱账：本周存入与目标进度', () => {
+    const r = core.buildWeeklyReport(reportInput());
+    assert.strictEqual(r.saving.weekSaved, 200);
+    assert.strictEqual(r.saving.goalName, '相机');
+    assert.strictEqual(r.saving.pct, 35);
+});
+
+test('一句话总结包含币账与超支结论', () => {
+    const r = core.buildWeeklyReport(reportInput());
+    assert.ok(r.summary.includes('本周完成 3 个番茄'));
+    assert.ok(r.summary.includes('超支'));
+    assert.ok(r.summary.endsWith('。'));
+});
+
+test('空数据不崩、不编造，给出可执行建议', () => {
+    const r = core.buildWeeklyReport({
+        tx: [], coinTx: [], budget: {}, goals: [], tasks: [],
+        weekStart: '2026-10-26', weekEnd: '2026-11-01', todayKey: '2026-11-01'
+    });
+    assert.strictEqual(r.money.expense, 0);
+    assert.strictEqual(r.time.pomodoros, 0);
+    assert.ok(r.summary.includes('没有完成番茄'));
+    assert.ok(r.advice.length >= 1 && r.advice.length <= 3);
+});
+
+// --- 9. 日期工具 ---------------------------------------------------------
+group('[9] weekRange / daysInMonth —— 周与月边界');
+
+test('周一为一周的第一天', () => {
+    const r = core.weekRange('2026-11-01'); // 周日
+    assert.strictEqual(r.start, '2026-10-26');
+    assert.strictEqual(r.end, '2026-11-01');
+});
+
+test('2026 年 11 月 30 天、2 月闰年 29 天', () => {
+    assert.strictEqual(core.daysInMonth('2026-11'), 30);
+    assert.strictEqual(core.daysInMonth('2028-02'), 29);
+    assert.strictEqual(core.daysInMonth('2026-02'), 28);
+});
+
 // --- 汇总 ---------------------------------------------------------------
 const total = passed + failures.length;
 console.log('\n' + '-'.repeat(52));
