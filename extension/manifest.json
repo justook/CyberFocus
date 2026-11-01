@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "CyberFocus 导航收藏",
+  "version": "0.1.0",
+  "description": "把当前网页收藏到 CyberFocus 个人导航页。投递后弹出确认框可选分组和图标，失败自动降级为复制剪贴板。",
+  "permissions": ["activeTab", "tabs", "storage", "clipboardWrite"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "添加到 CyberFocus 导航页",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

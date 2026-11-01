@@ -1161,6 +1161,235 @@
             text-overflow: ellipsis;
         }
 
+        /* --- 导航页管理（新增） --- */
+        /* 无内置 sprite 图标时：favicon 绝对定位叠在色块上，加载失败自然露出色块 */
+        .nav-icon-box.has-favicon {
+            position: relative;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            /* 色块颜色经 CSS 变量注入，:hover 才有机会覆盖（内联 background 会压死选择器） */
+            background: var(--tile, rgba(0,0,0,0.2));
+            /* 固定混合组：卡片有 backdrop-filter，不加 isolate 在 Chromium 上混合基准可能漂移 */
+            isolation: isolate;
+        }
+        .nav-icon-box.has-favicon img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            object-fit: contain;
+        }
+
+        /* --- 图标选择器（编辑链接弹窗） --- */
+        .nav-icon-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        /* .btn-sm 只在 .nav-mgr-toolbar 作用域有定义，弹窗里需单独收小 */
+        .nav-icon-row .btn-sm {
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .nav-icon-preview {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .nav-icon-preview svg { width: 20px; height: 20px; }
+        .nav-icon-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            max-height: 168px;
+            overflow-y: auto;
+            padding: 8px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+        }
+        .nav-icon-grid button {
+            aspect-ratio: 1;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: 0.15s;
+        }
+        .nav-icon-grid button svg { width: 19px; height: 19px; }
+        .nav-icon-grid button:hover { background: rgba(0, 242, 234, 0.12); color: var(--primary); }
+        .nav-icon-grid button.sel { border-color: var(--primary); background: rgba(0, 242, 234, 0.15); color: var(--primary); }
+        .nav-icon-grid button.nav-icon-auto { border-style: dashed; border-color: rgba(255,255,255,0.3); }
+        /* 虚线格被选中时边框也要变主色，否则被上一条的同特异性规则盖住 */
+        .nav-icon-grid button.nav-icon-auto.sel { border-color: var(--primary); }
+        /* 全局隐藏了滚动条，49 格网格只露出约一半图标——这里必须恢复，否则用户不知道能滚 */
+        .nav-icon-grid::-webkit-scrollbar { display: block; width: 6px; }
+        .nav-icon-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 3px; }
+
+        .nav-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 60px 20px;
+            color: var(--text-sec);
+            font-size: 14px;
+        }
+
+        .nav-manage-btn {
+            position: absolute;
+            top: 24px;
+            right: 28px;
+            z-index: 20;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop);
+            border: var(--glass-border);
+            color: var(--primary);
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .nav-manage-btn:hover { background: var(--primary); color: #000; transform: rotate(90deg); }
+
+        #navManagerModal .modal-content {
+            max-width: 640px;
+            width: 94%;
+            text-align: left;
+            max-height: 84vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .nav-mgr-toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .nav-mgr-toolbar .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+        .nav-mgr-list { overflow-y: auto; flex: 1; padding-right: 4px; }
+        .nav-mgr-group {
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+        .nav-mgr-ghead { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
+        .nav-mgr-gname {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .nav-mgr-count { font-size: 11px; color: var(--text-sec); flex-shrink: 0; }
+        .nav-mgr-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px 7px 24px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 13px;
+        }
+        .nav-mgr-row-title {
+            color: #ddd;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 190px;
+            flex-shrink: 0;
+        }
+        .nav-mgr-row-url {
+            color: var(--text-sec);
+            font-size: 11px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        .nav-mgr-btn {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255,255,255,0.08);
+            color: #ccc;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .nav-mgr-btn:hover { background: var(--primary); color: #000; }
+        .nav-mgr-btn.danger:hover { background: #ff5f56; color: #fff; }
+        .nav-mgr-add { padding: 6px 12px 12px 24px; }
+        .nav-mgr-add button {
+            font-size: 12px;
+            color: var(--primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        .nav-mgr-empty { color: var(--text-sec); font-size: 13px; text-align: center; padding: 24px 0; }
+        .nav-mgr-group.drag-over, .nav-mgr-row.drag-over {
+            outline: 2px dashed var(--primary);
+            outline-offset: -2px;
+        }
+        #navLinkModal .modal-content {
+            max-width: 420px;
+            /* 图标网格展开时内容约 730px：1366×768 / 高缩放屏会被 fixed 弹窗裁掉保存按钮 */
+            max-height: 86vh;
+            overflow-y: auto;
+        }
+        .nav-link-form select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+        }
+        /* 剪贴板读取被拒时的手动粘贴出口（插件 B1 兜底的确定性通道） */
+        .nav-import-area {
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 84px;
+            padding: 10px;
+            margin-top: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #ddd;
+            font: 12px monospace;
+            display: none;
+            resize: vertical;
+        }
+
         /* 侧边导航目录 */
         .nav-toc {
             list-style: none;
@@ -1451,6 +1680,9 @@
 
     <!-- 2. 个人导航页屏幕 -->
     <section id="nav-page" class="nav-page-section">
+        <button class="nav-manage-btn" id="navManageBtn" onclick="openNavManager()" title="管理导航页" aria-label="管理导航页">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-sliders-horizontal"></use></svg>
+        </button>
         <div class="nav-layout">
             <div class="nav-main" id="nav-content-container">
                 <!-- 动态渲染导航内容 -->
@@ -1477,6 +1709,42 @@
         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-gear"></use></svg>
     </button>
     
+    <!-- 导航页管理面板（先于 navLinkModal 出现，后者叠加在其上） -->
+    <div id="navManagerModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>🧭 管理导航页</h3>
+            <div class="nav-mgr-toolbar">
+                <button class="btn-primary btn-sm" onclick="mgrAddGroup()">＋ 新增分组</button>
+                <button class="btn-sec btn-sm" onclick="mgrImportFromClipboard()" title="读取剪贴板里的收藏数据（浏览器插件降级通道）">从剪贴板导入</button>
+                <button class="btn-sec btn-sm" onclick="mgrResetNav()">恢复默认</button>
+            </div>
+            <div id="navMgrList" class="nav-mgr-list"></div>
+            <textarea id="navImportArea" class="nav-import-area" placeholder='粘贴收藏数据，如：{"title":"示例","url":"https://example.com"}，也支持数组批量导入'></textarea>
+            <button class="btn-sec btn-sm" id="navImportPasteBtn" onclick="mgrImportPasted()" style="display: none; margin-top: 8px; width: 100%;">导入粘贴数据</button>
+            <button class="btn-primary" onclick="closeNavManager()" style="width: 100%; margin-top: 14px;">完成</button>
+        </div>
+    </div>
+
+    <!-- 导航链接编辑弹窗 -->
+    <div id="navLinkModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="navLinkModalTitle">🔗 添加链接</h3>
+            <div class="input-group nav-link-form">
+                <input type="text" id="navLinkTitle" placeholder="标题（留空自动取域名）">
+                <input type="text" id="navLinkUrl" placeholder="网址 (如: github.com)">
+                <input type="text" id="navLinkDesc" placeholder="描述（可选）">
+                <select id="navLinkGroup"></select>
+                <div class="nav-icon-row">
+                    <button type="button" class="btn-sec btn-sm" onclick="toggleNavIconPicker()">选择图标</button>
+                    <span id="navIconPreview" class="nav-icon-preview" title="当前图标"></span>
+                </div>
+                <div id="navIconGrid" class="nav-icon-grid" style="display: none;"></div>
+            </div>
+            <button class="btn-primary" onclick="saveNavLink()" style="width: 100%">保存</button>
+            <button class="btn-sec" onclick="closeNavLinkModal()" style="margin-top: 10px; width: 100%">取消</button>
+        </div>
+    </div>
+
     <!-- 快捷方式 添加/编辑 模态框 -->
     <div id="shortcutModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 350px;">
@@ -1737,7 +2005,7 @@
                     <div class="config-header">关于</div>
                     <div style="text-align:center; margin-top:40px;">
                         <h2 style="color:#fff; font-family:'Courier New', monospace;">CyberFocus</h2>
-                        <p style="color:var(--primary); font-size:18px;">v0.8.0</p>
+                        <p style="color:var(--primary); font-size:18px;">v0.9.0</p>
                         <p style="color:#aaa; font-size:12px; margin-top:20px;">Designed for Productivity & Aesthetics.</p>
                     </div>
                 </div>
@@ -1819,8 +2087,11 @@
         throw new Error('CyberCore missing or incompatible: js/core.js');
     }
 
-    // --- 0. 导航数据配置 (可在此轻松维护) ---
-    const navConfig = [
+    // --- 0. 导航页数据层 ---
+    // 原先 navConfig 是硬编码常量：加一条链接要改源码、重新发版，用户本地改动还会被更新覆盖。
+    // 现在下面的表只作「首次启动的种子」，实际数据存 localStorage['cyberNavConfig']。
+    const NAV_KEY = 'cyberNavConfig';
+    const NAV_DEFAULT = [
         {
             category: "常用工具",
             icon: "ph-wrench",
@@ -1829,11 +2100,9 @@
                 { title: "csdn", desc: "中文专业开发者社区", url: "https://www.csdn.net/", icon: "ph-code" },
                 { title: "Stack Overflow", desc: "全球最大的技术问答社区", url: "https://stackoverflow.com", icon: "ph-code" },
                 // 个人站点、校内平台等私有链接已从此处移除，如需使用请自行添加
-                // { title: "Can I use", desc: "前端 API 兼容性查询", url: "https://caniuse.com", icon: "ph-browsers" },
                 { title: "TinyPNG", desc: "智能图片压缩工具", url: "https://tinypng.com", icon: "ph-image" },
                 { title: "开发者武器库", desc: "高效程序员的工具合集", url: "https://devtool.tech", icon: "ph-toolbox" },
-                { title: "在线工具", desc: "程序员的万能工具箱", url: "https://tool.lu", icon: "ph-cube" },
-                // { title: "Json 中文网", desc: "在线解析及格式化验证", url: "https://www.json.cn", icon: "ph-brackets-curly" }
+                { title: "在线工具", desc: "程序员的万能工具箱", url: "https://tool.lu", icon: "ph-cube" }
             ]
         },
         {
@@ -1845,7 +2114,7 @@
                 { title: "Midjourney (绘画)", desc: "最顶尖的 AI 艺术生成器", url: "https://www.midjourney.com", icon: "ph-paint-brush-broad" },
                 { title: "Beautiful.ai (PPT)", desc: "智能演示文稿生成平台", url: "https://www.beautiful.ai", icon: "ph-presentation-chart" },
                 { title: "Doubao", desc: "豆包", url: "https://www.doubao.com", icon: "ph-chat-dots" },
-                { title: "Google AI Studio", desc: "AI 助手", url: "https://aistudio.google.com/", icon: "ph-robot"}
+                { title: "Google AI Studio", desc: "AI 助手", url: "https://aistudio.google.com/", icon: "ph-robot" }
             ]
         },
         {
@@ -1853,7 +2122,7 @@
             icon: "ph-shield",
             links: [
                 { title: "EduSrc", desc: "教育漏洞报告平台", url: "https://src.sjtu.edu.cn/", icon: "ph-bug" },
-                { title: "CNNVD", desc: "中国 National Vulnerability Database", url: "https://www.cnnvd.org.cn/", icon: "ph-bug" },
+                { title: "CNNVD", desc: "中国 National Vulnerability Database", url: "https://www.cnnvd.org.cn/", icon: "ph-bug" }
             ]
         },
         {
@@ -1861,7 +2130,7 @@
             icon: "ph-users",
             links: [
                 { title: "QQ邮箱", desc: "", url: "https://mail.qq.com", icon: "ph-envelope-simple" },
-                { title: "163邮箱", desc: "", url: "https://mail.163.com", icon: "ph-envelope-simple" },
+                { title: "163邮箱", desc: "", url: "https://mail.163.com", icon: "ph-envelope-simple" }
             ]
         },
         {
@@ -1880,85 +2149,895 @@
             links: [
                 { title: "Bilibili", desc: "国内最火的年轻人文化社区", url: "https://www.bilibili.com", icon: "ph-television" },
                 { title: "知乎", desc: "有问题，上知乎", url: "https://www.zhihu.com", icon: "ph-chat-centered-text" },
-                { title: "微博", desc: "随时随地发现新鲜事", url: "https://weibo.com", icon: "ph-fire" },
+                { title: "微博", desc: "随时随地发现新鲜事", url: "https://weibo.com", icon: "ph-fire" }
             ]
         }
     ];
 
-    // --- 1. 初始化导航页 ---
+    // 内存快照：safeParse/showToast 定义在本段之后，靠惰性初始化规避顺序依赖
+    // navLastSerialized 记录「我们最后一次已知的磁盘内容」，persistNav 写入前比对它，
+    // 防止同一 file:// 页面开两个标签页时，后写的标签用旧快照整表覆盖先写标签的改动。
+    let navData = null;
+    let navLastSerialized = null;
+
+    // 归一化成 http/https 绝对地址；裸域名补 https://；javascript:/data: 等一律拒绝
+    function normalizeNavUrl(input) {
+        let s = String(input == null ? '' : input).trim();
+        if (!s) return '';
+        if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) s = 'https://' + s;
+        let u;
+        try { u = new URL(s); } catch (e) { return ''; }
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+        return u.href;
+    }
+
+    function normalizeNav(rawList) {
+        const out = [];
+        let dropped = 0;
+        (Array.isArray(rawList) ? rawList : []).forEach(g => {
+            if (!g || typeof g !== 'object') { dropped++; return; }
+            if (typeof g.category !== 'string' || !g.category.trim()) { dropped++; return; }
+            const links = [];
+            (Array.isArray(g.links) ? g.links : []).forEach(l => {
+                if (!l || typeof l !== 'object') { dropped++; return; }
+                const url = normalizeNavUrl(l.url);
+                if (!url) { dropped++; return; }        // 坏链接跳过，不让它进渲染路径
+                links.push({
+                    title: (typeof l.title === 'string' && l.title.trim()) ? l.title.trim() : url,
+                    desc: typeof l.desc === 'string' ? l.desc : '',
+                    url: url,
+                    // 非法 icon 原样保留：渲染层 spriteIcon 返回 null 自然走 favicon 兜底，
+                    // 不在这里置空——否则下次落盘就把用户的原始值固化销毁了
+                    icon: typeof l.icon === 'string' ? l.icon : ''
+                });
+            });
+            out.push({
+                category: g.category.trim(),
+                icon: (typeof g.icon === 'string' && spriteIcon(g.icon)) ? g.icon : 'ph-cube',
+                links: links
+            });
+        });
+        // 裁剪必须让用户知道，否则下次 persistNav 会把丢弃固化成"链接凭空消失"
+        if (dropped > 0) {
+            setTimeout(() => showToast('导航数据中有 ' + dropped + ' 条无法识别的条目已被跳过', 'warn', 4200), 0);
+        }
+        return out;
+    }
+
+    function ensureNavData() {
+        if (navData) return navData;
+        const stored = safeParse(NAV_KEY, null, 'array');
+        const isFirstRun = !Array.isArray(stored);   // 从没写过 → 用种子；写过空数组是用户的主动状态，尊重它
+        navData = normalizeNav(isFirstRun ? NAV_DEFAULT : stored);
+        navLastSerialized = isFirstRun ? null : safeGetRaw(NAV_KEY);
+        if (isFirstRun) persistNav();
+        return navData;
+    }
+
+    function persistNav() {
+        if (!navData) return false;
+        // 磁盘内容和我上次已知的不一样 → 其他标签页写过。拒绝覆盖，改载最新数据。
+        const disk = safeGetRaw(NAV_KEY);
+        if (disk !== navLastSerialized) {
+            navData = null;
+            ensureNavData();
+            renderNav();
+            if (document.getElementById('navManagerModal').classList.contains('show')) renderNavMgr();
+            showToast('检测到导航页在其他标签页被修改，已加载最新数据，请重试刚才的操作', 'warn', 4200);
+            return false;
+        }
+        const json = JSON.stringify(navData);
+        if (!safeSet(NAV_KEY, json)) return false;
+        navLastSerialized = json;
+        return true;
+    }
+
+    // 其他标签页改了导航数据 → 本页尽力同步重载（storage 事件在 file:// 下不保证触发，
+    // 所以 persistNav 里的写入前比对才是主防线，这里只是增强）。
+    // 管理面板与编辑弹窗持有的 {gi,li} 是下标，整表重载后会指向别的链接——必须一并作废。
+    window.addEventListener('storage', (e) => {
+        if (e.key !== NAV_KEY) return;
+        navData = null;
+        ensureNavData();
+        renderNav();
+        if (document.getElementById('navLinkModal').classList.contains('show')) closeNavLinkModal();
+        if (document.getElementById('navManagerModal').classList.contains('show')) renderNavMgr();
+    });
+
+    // --- 图标：内置 sprite 优先，没有就用 favicon + 色块 ---
+    const NAV_TILE_COLORS = ['#534AB7', '#1D9E75', '#D85A30', '#378ADD', '#993556', '#BA7517', '#5F5E5A', '#639922'];
+
+    function navTileColor(url) {
+        let h = 0;
+        for (let i = 0; i < url.length; i++) h = (h * 31 + url.charCodeAt(i)) >>> 0;
+        return NAV_TILE_COLORS[h % NAV_TILE_COLORS.length];
+    }
+
+    function navInitial(title) {
+        for (const ch of String(title || '')) {
+            // 跳过 emoji、符号区、变体选择符、零宽连接符与空白，取第一个可见字符
+            if (/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{FE0F}\u{200D}\s]/u.test(ch)) continue;
+            return ch;
+        }
+        return String(title || '?').charAt(0) || '?';
+    }
+
+    function navHostname(url) {
+        try { return new URL(url).hostname; } catch (e) { return ''; }
+    }
+
+    // 构造 <svg><use href="#i-bold-xxx">；图标名不在 sprite 里时返回 null，交给 favicon 分支
+    function spriteIcon(name) {
+        if (typeof name !== 'string' || name.indexOf('ph-') !== 0) return null;
+        const id = 'i-bold-' + name.slice(3);
+        if (!document.getElementById(id)) return null;
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'icon');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.setAttribute('focusable', 'false');
+        const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        use.setAttribute('href', '#' + id);
+        svg.appendChild(use);
+        return svg;
+    }
+
+    // 内网/本地地址一律不发远程图标请求：不把内网域名、机器名、私有 IP 泄露给第三方
+    function navHostIsLocal(host) {
+        if (!host) return true;
+        if (!host.includes('.')) return true;                       // 裸主机名（内网机器）
+        if (/^(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host)) return true;
+        if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;      // 其余形式的 IP
+        if (/\.(local|lan|internal|home|localdomain)$/i.test(host)) return true;
+        return false;
+    }
+
+    function buildNavIcon(link) {
+        const box = document.createElement('div');
+        box.className = 'nav-icon-box';
+        const builtin = spriteIcon(link.icon);
+        if (builtin) { box.appendChild(builtin); return box; }
+
+        // 色块垫底 + favicon 绝对定位叠在上面（CSS：.nav-icon-box.has-favicon img）。
+        // favicon.im 对未知域名会返回灰色占位图且 HTTP 200，onerror 不会触发，
+        // 所以色块必须一直在下层——图挂没挂掉，观感都成立。onerror 只是兜底移除。
+        const host = navHostname(link.url);
+        box.classList.add('has-favicon');
+        box.style.setProperty('--tile', navTileColor(link.url));
+        box.textContent = navInitial(link.title);
+        if (host && !navHostIsLocal(host)) {
+            const img = document.createElement('img');
+            img.src = 'https://favicon.im/' + host + '?larger=true';
+            img.alt = '';
+            img.loading = 'lazy';
+            img.referrerPolicy = 'no-referrer';
+            img.onerror = () => img.remove();
+            box.appendChild(img);
+        }
+        return box;
+    }
+
+    // --- 1. 渲染导航页 ---
+    // observer 每次 render 重建（disconnect 后新建），不会像旧 scroll 方案那样累积监听
+    let navObserver = null;
+
     function renderNav() {
         const container = document.getElementById('nav-content-container');
         const toc = document.getElementById('nav-toc');
         if (!container || !toc) return;
-        
+
+        const data = ensureNavData();
         container.innerHTML = '';
         toc.innerHTML = '';
+        if (navObserver) { navObserver.disconnect(); navObserver = null; }
 
-        navConfig.forEach((group, index) => {
-            const sectionId = `nav-sec-${index}`;
-            
-            // 渲染内容区
+        if (!data.length) {
+            const empty = document.createElement('div');
+            empty.className = 'nav-empty';
+            const tip = document.createElement('div');
+            tip.textContent = '导航页还是空的';
+            empty.appendChild(tip);
+            const btn = document.createElement('button');
+            btn.className = 'btn-primary';
+            btn.textContent = '打开管理面板';
+            btn.onclick = openNavManager;
+            empty.appendChild(btn);
+            container.appendChild(empty);
+            return;
+        }
+
+        data.forEach((group, index) => {
+            const sectionId = 'nav-sec-' + index;
+
             const section = document.createElement('div');
             section.className = 'nav-group';
             section.id = sectionId;
-            section.innerHTML = `
-                <div class="nav-section-header">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-${group.icon.slice(3)}"></use></svg> ${group.category}
-                </div>
-                <div class="nav-grid">
-                    ${group.links.map(link => `
-                        <a href="${link.url}" target="_blank" class="nav-link-card">
-                            <div class="nav-icon-box">
-                                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bold-${link.icon.slice(3)}"></use></svg>
-                            </div>
-                            <div class="nav-link-info">
-                                <div class="nav-link-title">${link.title}</div>
-                                <div class="nav-link-desc">${link.desc}</div>
-                            </div>
-                        </a>
-                    `).join('')}
-                </div>
-            `;
+
+            const head = document.createElement('div');
+            head.className = 'nav-section-header';
+            const headIcon = spriteIcon(group.icon);
+            if (headIcon) head.appendChild(headIcon);
+            head.appendChild(document.createTextNode(group.category));
+            section.appendChild(head);
+
+            const grid = document.createElement('div');
+            grid.className = 'nav-grid';
+            group.links.forEach(link => {
+                // 全 DOM 构造 + textContent：标题/描述是用户输入，绝不能进 innerHTML
+                const a = document.createElement('a');
+                a.className = 'nav-link-card';
+                a.href = link.url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.title = link.url;   // hover 显示真实地址：外来投递的标题可以伪装，域名不会
+                a.appendChild(buildNavIcon(link));
+
+                const info = document.createElement('div');
+                info.className = 'nav-link-info';
+                const title = document.createElement('div');
+                title.className = 'nav-link-title';
+                title.textContent = link.title;
+                const desc = document.createElement('div');
+                desc.className = 'nav-link-desc';
+                desc.textContent = link.desc;
+                info.appendChild(title);
+                info.appendChild(desc);
+                a.appendChild(info);
+                grid.appendChild(a);
+            });
+            section.appendChild(grid);
             container.appendChild(section);
 
-            // 渲染目录
-            const tocItem = document.createElement('li');
-            tocItem.className = 'nav-toc-item';
-            
-            const link = document.createElement('a');
-            link.className = 'nav-toc-link';
-            link.innerText = group.category;
-            link.onclick = (e) => {
+            const li = document.createElement('li');
+            li.className = 'nav-toc-item';
+            const tocLink = document.createElement('a');
+            tocLink.className = 'nav-toc-link';
+            tocLink.textContent = group.category;
+            tocLink.href = '#' + sectionId;
+            tocLink.onclick = (e) => {
                 e.preventDefault();
-                document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+                section.scrollIntoView({ behavior: 'smooth' });
             };
-            
-            tocItem.appendChild(link);
-            toc.appendChild(tocItem);
+            li.appendChild(tocLink);
+            toc.appendChild(li);
         });
 
-        // 监听滚动实现目录高亮
-        window.addEventListener('scroll', () => {
-            let current = -1;
-            navConfig.forEach((_, i) => {
-                const sec = document.getElementById(`nav-sec-${i}`);
-                if (sec) {
-                    const rect = sec.getBoundingClientRect();
-                    // 当元素顶部距离视口上方小于 150px 时认为进入了该区域
-                    if (rect.top <= 150) {
-                        current = i;
-                    }
-                }
+        // 目录高亮：维护「当前命中视口顶带的分组」集合，取最靠上者点亮。
+        // 相比旧 scroll 方案修掉了监听累积；页尾哨兵保证最后一个矮分组也能点亮。
+        const tocLinks = Array.from(toc.querySelectorAll('.nav-toc-link'));
+        const visible = new Set();
+        const sentinel = document.createElement('div');
+        sentinel.style.height = '1px';
+        container.appendChild(sentinel);
+        let sentinelVisible = false;
+
+        navObserver = new IntersectionObserver((entries) => {
+            entries.forEach(en => {
+                const m = /^nav-sec-(\d+)$/.exec(String(en.target.id));
+                if (!m) { sentinelVisible = en.isIntersecting; return; }   // 页尾哨兵
+                const idx = Number(m[1]);
+                if (en.isIntersecting) visible.add(idx); else visible.delete(idx);
             });
-            
-            const links = document.querySelectorAll('.nav-toc-link');
-            links.forEach((link, idx) => {
-                link.classList.remove('active');
-                if (idx === current) {
-                    link.classList.add('active');
-                }
+            let best;
+            if (sentinelVisible) best = tocLinks.length - 1;               // 滚到底：点亮最后一组
+            else if (visible.size) best = Math.min(...visible);
+            if (best !== undefined && best >= 0) {
+                tocLinks.forEach((el, i) => el.classList.toggle('active', i === best));
+            }
+        }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
+        Array.from(container.querySelectorAll('.nav-group')).forEach(sec => navObserver.observe(sec));
+        navObserver.observe(sentinel);
+    }
+
+    // --- 1.1 统一入口：插件 hash 与剪贴板导入都走这里，去重/落组/持久化只留一份 ---
+    function addNavItem(payload) {
+        const url = normalizeNavUrl(payload && payload.url);
+        if (!url) { showToast('添加失败：网址无效', 'error'); return false; }
+        const title = (payload && typeof payload.title === 'string' && payload.title.trim())
+            ? payload.title.trim()
+            : (navHostname(url) || url);
+        const data = ensureNavData();
+        for (const g of data) {
+            if (g.links.some(l => l.url === url)) {
+                showToast('导航页里已经有这个网址了', 'warn');
+                return false;
+            }
+        }
+
+        // 落组：payload.group 命中就用它，否则用第一个分组；一个分组都没有就新建「收藏」
+        let target = null;
+        if (payload && payload.group) {
+            const want = String(payload.group).trim();
+            target = data.find(g => g.category === want) || null;
+        }
+        if (!target) target = data[0] || null;
+        if (!target) {
+            target = { category: '收藏', icon: 'ph-cube', links: [] };
+            data.push(target);
+        }
+        target.links.push({ title: title, desc: '', url: url, icon: '' });
+
+        if (!persistNav()) return false;   // 写盘失败时内存态已被 persistNav 回滚为磁盘内容，不弹成功提示
+        renderNav();
+        if (document.getElementById('navManagerModal').classList.contains('show')) renderNavMgr();
+        showToast('已添加到「' + target.category + '」：' + title + '（' + (navHostname(url) || url) + '）', 'success', 3600);
+        return true;
+    }
+
+    // --- 1.2 外部入口：#add=<base64url(JSON{title,url,group?})> ---
+    // 浏览器插件一键收藏、手机端把链接发给自己，都走这条通道
+    function decodeNavAddHash(hash) {
+        const m = /^#?add=(.+)$/.exec(String(hash || ''));
+        if (!m) return null;
+        let b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        try {
+            // atob 只解 latin1，先还原成字节再按 UTF-8 解码，否则中文标题会乱码
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            const parsed = JSON.parse(new TextDecoder().decode(bytes));
+            // truthy 但不是对象（如 base64("123")）不能进预填弹窗，按解析失败处理
+            return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : null;
+        } catch (e) { return null; }
+    }
+
+    function consumeNavAddHash() {
+        const raw = location.hash;
+        const payload = decodeNavAddHash(raw);
+        if (!payload) {
+            // 带 add= 前缀但解不开：给个对账提示并清掉，避免刷新反复失败且无反馈
+            if (/^#?add=/.test(raw)) {
+                showToast('导航投递数据无法解析，已忽略', 'error');
+                try { history.replaceState(null, '', location.pathname + location.search); }
+                catch (e) { location.hash = ''; }
+            }
+            return false;
+        }
+        // 带 group 的是程序化投递（手机端把链接发给自己），按指定分组静默落库；
+        // 不带 group 的是插件人工点击——打开预填弹窗，让用户看见并选择分组/图标
+        const wantsGroup = typeof payload.group === 'string' && payload.group.trim();
+        if (wantsGroup) addNavItem(payload);
+        else openNavDraftModal(payload);
+        // 清掉 hash：否则每次刷新都会重放一遍（去重能挡住重复写入，但提示会一直弹）。
+        // 注意不带 #nav-page：本应用没有 hash 路由，残留 hash 会让刷新后直接滚到第二屏。
+        try {
+            history.replaceState(null, '', location.pathname + location.search);
+        } catch (e) {
+            location.hash = '';   // file:// 下 replaceState 可能被拒，退而求其次
+        }
+        return true;
+    }
+
+    // 插件人工投递：打开编辑弹窗预填，用户在完整的选择器里挑分组和图标
+    let navDraftActive = false;   // 本轮弹窗来自插件投递（取消时要给反馈，防止收藏静默消失）
+
+    function openNavDraftModal(payload) {
+        // 已有编辑弹窗打开时不覆盖：用户没保存的输入会被重置，且"编辑"会悄悄变"新增"
+        if (document.getElementById('navLinkModal').classList.contains('show')) {
+            showToast('已有编辑弹窗打开，本次收藏已取消', 'warn', 4200);
+            return;
+        }
+        const data = ensureNavData();
+        if (!data.length) { addNavItem(payload); return; }   // 没有任何分组时静默添加（会自动建「收藏」组）
+
+        // 重复网址提前拦截：省得用户填完点保存才被拒
+        const url = normalizeNavUrl(payload && payload.url);
+        if (url) {
+            const dupG = data.find(g => g.links.some(l => l.url === url));
+            if (dupG) {
+                showToast('该网址已在「' + dupG.category + '」分组中，无需重复收藏', 'warn', 4200);
+                return;
+            }
+        }
+
+        const gi = navPreferredGroupIndex(data);
+        openNavLinkModal(gi, -1);
+
+        const tEl = document.getElementById('navLinkTitle');
+        const uEl = document.getElementById('navLinkUrl');
+        uEl.value = String((payload && payload.url) || '');
+        tEl.value = String((payload && payload.title) || '');
+        document.getElementById('navLinkModalTitle').textContent = '🔗 收藏到导航页';
+        navDraftActive = true;
+        // 光标落在标题末尾：看完标题直接回车就保存，分组沿用上次选择
+        setTimeout(() => {
+            tEl.focus();
+            tEl.setSelectionRange(tEl.value.length, tEl.value.length);
+        }, 80);
+    }
+
+    // 记住上次保存用的分组：插件投递弹窗默认落到它，减少每次手选
+    const NAV_LAST_GROUP_KEY = 'cyberNavLastGroup';
+
+    function navPreferredGroupIndex(data) {
+        const want = (safeGetRaw(NAV_LAST_GROUP_KEY) || '').trim();
+        if (want) {
+            const i = data.findIndex(g => g.category === want);
+            if (i >= 0) return i;
+        }
+        return 0;
+    }
+
+    // --- 1.3 导航页管理面板 ---
+    let navMgrEditing = null;   // { gi, li }；li = -1 表示新增
+    let navMgrDrag = null;      // { kind:'group', gi } | { kind:'link', gi, li }
+
+    function mgrBtn(label, title, onClick, cls) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'nav-mgr-btn' + (cls ? ' ' + cls : '');
+        b.textContent = label;
+        b.title = title;
+        b.onclick = onClick;
+        return b;
+    }
+
+    function bindMgrDrag(el, payload) {
+        el.draggable = true;
+        el.addEventListener('dragstart', (e) => {
+            e.stopPropagation();               // 子元素拖拽不要触发外层的分组拖拽
+            navMgrDrag = payload;
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', 'navmgr'); } catch (_) { }
+        });
+        el.addEventListener('dragover', (e) => {
+            if (!navMgrDrag) return;
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.add('drag-over');
+        });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+        // 拖拽中途取消（Esc/拖出窗口松手）也必须清状态，否则残留的 navMgrDrag
+        // 会让之后任何外部拖入（比如拖个文件进来）误触发移动
+        el.addEventListener('dragend', () => {
+            navMgrDrag = null;
+            el.classList.remove('drag-over');
+        });
+        el.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.remove('drag-over');
+            const drag = navMgrDrag;
+            navMgrDrag = null;
+            if (!drag) return;
+            if (payload.kind === 'group') {
+                // 拖到分组任意位置：分组 → 排序；链接 → 移入该组
+                if (drag.kind === 'group') mgrShiftGroupTo(drag.gi, payload.gi);
+                else mgrMoveLink(drag.gi, drag.li, payload.gi);
+            }
+        });
+    }
+
+    function openNavManager() {
+        ensureNavData();
+        renderNavMgr();
+        document.getElementById('navManagerModal').classList.add('show');
+    }
+
+    function closeNavManager() {
+        document.getElementById('navManagerModal').classList.remove('show');
+        renderNav();
+    }
+
+    function renderNavMgr() {
+        const list = document.getElementById('navMgrList');
+        if (!list) return;
+        list.innerHTML = '';
+        const data = ensureNavData();
+
+        if (!data.length) {
+            const p = document.createElement('div');
+            p.className = 'nav-mgr-empty';
+            p.textContent = '还没有分组，先点上方「新增分组」';
+            list.appendChild(p);
+            return;
+        }
+
+        data.forEach((group, gi) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'nav-mgr-group';
+            bindMgrDrag(wrap, { kind: 'group', gi: gi });
+
+            const head = document.createElement('div');
+            head.className = 'nav-mgr-ghead';
+            const name = document.createElement('span');
+            name.className = 'nav-mgr-gname';
+            name.textContent = group.category;
+            head.appendChild(name);
+            const cnt = document.createElement('span');
+            cnt.className = 'nav-mgr-count';
+            cnt.textContent = group.links.length + ' 条';
+            head.appendChild(cnt);
+            head.appendChild(mgrBtn('↑', '上移分组', () => mgrShiftGroup(gi, -1)));
+            head.appendChild(mgrBtn('↓', '下移分组', () => mgrShiftGroup(gi, 1)));
+            head.appendChild(mgrBtn('✎', '重命名', () => mgrRenameGroup(gi)));
+            head.appendChild(mgrBtn('×', '删除分组', () => mgrDeleteGroup(gi), 'danger'));
+            wrap.appendChild(head);
+
+            group.links.forEach((link, li) => {
+                const row = document.createElement('div');
+                row.className = 'nav-mgr-row';
+                bindMgrDrag(row, { kind: 'link', gi: gi, li: li });
+
+                const t = document.createElement('span');
+                t.className = 'nav-mgr-row-title';
+                t.textContent = link.title;
+                row.appendChild(t);
+
+                const u = document.createElement('span');
+                u.className = 'nav-mgr-row-url';
+                u.textContent = navHostname(link.url) || link.url;
+                row.appendChild(u);
+
+                row.appendChild(mgrBtn('↑', '上移', () => mgrShiftLink(gi, li, -1)));
+                row.appendChild(mgrBtn('↓', '下移', () => mgrShiftLink(gi, li, 1)));
+                row.appendChild(mgrBtn('✎', '编辑', () => openNavLinkModal(gi, li)));
+                row.appendChild(mgrBtn('×', '删除', () => mgrDeleteLink(gi, li), 'danger'));
+                wrap.appendChild(row);
+            });
+
+            const add = document.createElement('div');
+            add.className = 'nav-mgr-add';
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.textContent = '＋ 在此组添加链接';
+            addBtn.onclick = () => openNavLinkModal(gi, -1);
+            add.appendChild(addBtn);
+            wrap.appendChild(add);
+
+            list.appendChild(wrap);
+        });
+    }
+
+    function mgrAddGroup() {
+        const name = prompt('新分组名称', '新分组');
+        if (name === null) return;
+        const cat = name.trim();
+        if (!cat) { showToast('分组名称不能为空', 'warn'); return; }
+        const data = ensureNavData();
+        if (data.some(g => g.category === cat)) { showToast('已经有同名分组了', 'warn'); return; }
+        data.push({ category: cat, icon: 'ph-cube', links: [] });
+        if (!persistNav()) return;   // 写盘失败时 persistNav 已回滚内存态并给出提示，这里只放弃重绘
+        renderNavMgr();
+        renderNav();
+        showToast('已创建分组「' + cat + '」', 'success');
+    }
+
+    function mgrRenameGroup(gi) {
+        const data = ensureNavData();
+        const g = data[gi];
+        if (!g) return;
+        const name = prompt('分组名称', g.category);
+        if (name === null) return;
+        const cat = name.trim();
+        if (!cat) { showToast('分组名称不能为空', 'warn'); return; }
+        if (data.some((x, i) => i !== gi && x.category === cat)) { showToast('已经有同名分组了', 'warn'); return; }
+        const oldName = g.category;
+        g.category = cat;
+        // 同步"记住的上次分组"，否则重命名后默认落组静默失效
+        if (oldName === (safeGetRaw(NAV_LAST_GROUP_KEY) || '').trim()) safeSet(NAV_LAST_GROUP_KEY, cat);
+        if (!persistNav()) return;   // 写盘失败时 persistNav 已回滚内存态并给出提示，这里只放弃重绘
+        renderNavMgr();
+        renderNav();
+    }
+
+    function mgrDeleteGroup(gi) {
+        const data = ensureNavData();
+        const g = data[gi];
+        if (!g) return;
+        if (!confirm('删除分组「' + g.category + '」及其下 ' + g.links.length + ' 条链接？')) return;
+        if (g.category === (safeGetRaw(NAV_LAST_GROUP_KEY) || '').trim()) safeSet(NAV_LAST_GROUP_KEY, '');
+        data.splice(gi, 1);
+        if (!persistNav()) return;   // 写盘失败时 persistNav 已回滚内存态并给出提示，这里只放弃重绘
+        renderNavMgr();
+        renderNav();
+    }
+
+    function mgrShiftGroup(gi, dir) {
+        const data = ensureNavData();
+        const to = gi + dir;
+        if (to < 0 || to >= data.length) return;
+        const tmp = data[gi];
+        data[gi] = data[to];
+        data[to] = tmp;
+        if (!persistNav()) return;   // 写盘失败时 persistNav 已回滚内存态并给出提示，这里只放弃重绘
+        renderNavMgr();
+        renderNav();
+    }
+
+    // 拖拽排序用：把 from 挪到 to 的位置（splice 语义；与上下移的 swap 仅在相邻位置时结果相同）
+    function mgrShiftGroupTo(from, to) {
+        const data = ensureNavData();
+        if (from === to || from < 0 || to < 0 || from >= data.length || to >= data.length) return;
+        const moved = data.splice(from, 1)[0];
+        data.splice(to, 0, moved);
+        if (!persistNav()) return;   // 写盘失败时 persistNav 已回滚内存态并给出提示，这里只放弃重绘
+        renderNavMgr();
+        renderNav();
+    }
+
+    function mgrShiftLink(gi, li, dir) {
+        const data = ensureNavData();
+        const g = data[gi];
+        if (!g) return;
+        const to = li + dir;
+        if (to < 0 || to >= g.links.length) return;
+        const tmp = g.links[li];
+        g.links[li] = g.links[to];
+        g.links[to] = tmp;
+        if (!persistNav()) return;   // 写盘失败时 persistNav 已回滚内存态并给出提示，这里只放弃重绘
+        renderNavMgr();
+        renderNav();
+    }
+
+    function mgrMoveLink(gFrom, lFrom, gTo) {
+        const data = ensureNavData();
+        const src = data[gFrom];
+        const dst = data[gTo];
+        if (!src || !dst || gFrom === gTo || !src.links[lFrom]) return;
+        const moved = src.links.splice(lFrom, 1)[0];
+        dst.links.push(moved);
+        if (!persistNav()) return;   // 写盘失败时 persistNav 已回滚内存态并给出提示，这里只放弃重绘
+        renderNavMgr();
+        renderNav();
+    }
+
+    function mgrDeleteLink(gi, li) {
+        const data = ensureNavData();
+        const g = data[gi];
+        if (!g || !g.links[li]) return;
+        const title = g.links[li].title;
+        if (!confirm('从导航页移除「' + title + '」？')) return;
+        g.links.splice(li, 1);
+        if (!persistNav()) return;   // 写盘失败时 persistNav 已回滚内存态并给出提示，这里只放弃重绘
+        renderNavMgr();
+        renderNav();
+    }
+
+    function mgrResetNav() {
+        if (!confirm('恢复默认会覆盖当前导航页的全部改动，确定吗？')) return;
+        try { localStorage.removeItem(NAV_KEY); } catch (e) { }
+        safeSet(NAV_LAST_GROUP_KEY, '');   // 种子分组名和用户分组未必同名，记住的默认落组一并作废
+        navData = null;
+        ensureNavData();     // 重新以种子初始化并落盘
+        renderNavMgr();
+        renderNav();
+        showToast('已恢复默认导航', 'success');
+    }
+
+    function mgrImportFromClipboard() {
+        if (!navigator.clipboard || !navigator.clipboard.readText) {
+            openManualImport('当前环境不支持读取剪贴板，请手动粘贴到下方输入框');
+            return;
+        }
+        navigator.clipboard.readText().then(text => {
+            if (!importNavText(text)) {
+                openManualImport('剪贴板里没有可识别的收藏数据，可直接粘贴到下方输入框');
+            }
+            renderNavMgr();
+        }).catch(() => {
+            // file:// 下 clipboard-read 往往无法授予：给出确定性的手动出口，而不是死胡同
+            openManualImport('读取剪贴板被拒绝，请把插件复制的 JSON 手动粘贴到下方输入框');
+        });
+    }
+
+    function openManualImport(msg) {
+        const area = document.getElementById('navImportArea');
+        const btn = document.getElementById('navImportPasteBtn');
+        if (!area) { if (msg) showToast(msg, 'warn'); return; }
+        area.style.display = 'block';
+        if (btn) btn.style.display = 'block';
+        area.value = '';
+        if (msg) showToast(msg, 'warn', 4200);
+        area.focus();
+    }
+
+    function importNavText(text) {
+        let payload = null;
+        try { payload = JSON.parse(text); } catch (e) { payload = null; }
+        if (!payload || typeof payload !== 'object') return false;
+        if (Array.isArray(payload)) {
+            let ok = 0;
+            payload.forEach(p => { if (addNavItem(p)) ok++; });
+            if (ok) showToast('批量导入完成：' + ok + '/' + payload.length, 'success');
+            return ok > 0;
+        }
+        return addNavItem(payload);
+    }
+
+    function mgrImportPasted() {
+        const area = document.getElementById('navImportArea');
+        if (!area || !area.value.trim()) { showToast('请先粘贴收藏数据', 'warn'); return; }
+        if (importNavText(area.value)) {
+            area.value = '';
+            renderNavMgr();
+        } else {
+            showToast('粘贴内容无法解析为收藏数据', 'error');
+        }
+    }
+
+    function openNavLinkModal(gi, li) {
+        const data = ensureNavData();
+        navMgrEditing = { gi: gi, li: (typeof li === 'number' ? li : -1) };
+
+        const sel = document.getElementById('navLinkGroup');
+        sel.innerHTML = '';
+        data.forEach((g, i) => {
+            const o = document.createElement('option');
+            o.value = String(i);
+            o.textContent = g.category;
+            sel.appendChild(o);
+        });
+
+        const titleEl = document.getElementById('navLinkModalTitle');
+        const tEl = document.getElementById('navLinkTitle');
+        const uEl = document.getElementById('navLinkUrl');
+        const dEl = document.getElementById('navLinkDesc');
+
+        const editing = navMgrEditing.li >= 0 && data[gi] && data[gi].links[navMgrEditing.li];
+        if (editing) {
+            const link = data[gi].links[navMgrEditing.li];
+            titleEl.textContent = '✏️ 编辑链接';
+            tEl.value = link.title;
+            uEl.value = link.url;
+            dEl.value = link.desc;
+            sel.value = String(gi);
+            navIconPicked = link.icon || '';
+        } else {
+            titleEl.textContent = '🔗 添加链接';
+            tEl.value = '';
+            uEl.value = '';
+            dEl.value = '';
+            sel.value = String(gi >= 0 ? gi : 0);
+            navIconPicked = '';
+        }
+        buildNavIconGrid();
+        updateNavIconPreview();
+        document.getElementById('navIconGrid').style.display = 'none';
+
+        document.getElementById('navLinkModal').classList.add('show');
+        setTimeout(() => tEl.focus(), 60);
+    }
+
+    function closeNavLinkModal() {
+        const wasOpen = document.getElementById('navLinkModal').classList.contains('show');
+        document.getElementById('navLinkModal').classList.remove('show');
+        // 插件投递的预填框被取消（含 ESC）：hash 已清，不给反馈这条收藏就凭空消失了
+        if (wasOpen && navDraftActive) {
+            navDraftActive = false;
+            showToast('已取消收藏', 'warn', 3000);
+        }
+        navMgrEditing = null;
+        navIconPicked = '';   // 关闭即重置：不留上一次的选择给下一次打开
+    }
+
+    // 编辑弹窗内回车即保存（标题/网址/描述三个输入框），配合投递预填的"回车即收藏"
+    (function bindNavLinkEnter() {
+        document.querySelectorAll('#navLinkModal .nav-link-form input[type="text"]').forEach(inp => {
+            inp.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); saveNavLink(); }
             });
         });
+    })();
+
+    // --- 图标选择器：sprite 里的 symbol 运行时枚举，以后往 sprite 加图标自动收录 ---
+    let navIconPicked = '';          // 'ph-xxx' 或 ''（自动匹配）
+    let navIconGridBuilt = false;
+
+    function navSpriteNames() {
+        return Array.from(document.querySelectorAll('symbol[id^="i-bold-"]'))
+            .map(el => 'ph-' + el.id.slice(7));
+    }
+
+    function buildNavIconGrid() {
+        if (navIconGridBuilt) return;
+        navIconGridBuilt = true;
+        const grid = document.getElementById('navIconGrid');
+
+        // 首格「自动匹配」：清空 icon，走 favicon 兜底
+        const auto = document.createElement('button');
+        auto.type = 'button';
+        auto.className = 'nav-icon-auto';
+        auto.title = '自动匹配（favicon）';
+        auto.dataset.icon = '';
+        const wand = spriteIcon('ph-magic-wand');
+        if (wand) auto.appendChild(wand);
+        auto.addEventListener('click', () => selectNavIcon(''));
+        grid.appendChild(auto);
+
+        navSpriteNames().forEach(name => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.title = name;
+            b.dataset.icon = name;
+            const svg = spriteIcon(name);
+            if (svg) b.appendChild(svg);
+            b.addEventListener('click', () => selectNavIcon(name));
+            grid.appendChild(b);
+        });
+    }
+
+    function selectNavIcon(name) {
+        navIconPicked = name || '';
+        updateNavIconPreview();
+        document.getElementById('navIconGrid').style.display = 'none';
+    }
+
+    function toggleNavIconPicker() {
+        buildNavIconGrid();
+        const grid = document.getElementById('navIconGrid');
+        grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+    }
+
+    function updateNavIconPreview() {
+        const box = document.getElementById('navIconPreview');
+        box.textContent = '';
+        const svg = spriteIcon(navIconPicked);
+        if (svg) {
+            box.appendChild(svg);
+            box.title = navIconPicked;
+        } else {
+            box.textContent = '自动';
+            box.title = '自动匹配（favicon + 站点色块）';
+        }
+        // 高亮网格中的当前选择
+        document.querySelectorAll('#navIconGrid button').forEach(b => {
+            b.classList.toggle('sel', (b.dataset.icon || '') === navIconPicked);
+        });
+    }
+
+    function saveNavLink() {
+        const ed = navMgrEditing;
+        if (!ed) return;
+        const tEl = document.getElementById('navLinkTitle');
+        const uEl = document.getElementById('navLinkUrl');
+        const dEl = document.getElementById('navLinkDesc');
+        const sel = document.getElementById('navLinkGroup');
+
+        const url = normalizeNavUrl(uEl.value);
+        if (!url) { showToast('网址无效，请填 http/https 地址', 'error'); uEl.focus(); return; }
+
+        const data = ensureNavData();
+        const targetGi = Number(sel.value);
+        if (!data[targetGi]) { showToast('目标分组不存在', 'error'); return; }
+
+        const title = tEl.value.trim() || navHostname(url) || url;
+        const desc = dEl.value.trim();
+
+        // 去重：编辑自己不算重复
+        const dup = data.some((g, i) => g.links.some((l, j) => l.url === url && !(i === ed.gi && j === ed.li)));
+        if (dup) { showToast('这个网址已经在导航页里了', 'warn'); return; }
+
+        const old = (ed.li >= 0 && data[ed.gi] && data[ed.gi].links[ed.li]) ? data[ed.gi].links[ed.li] : null;
+        if (ed.li >= 0 && !old) {
+            // 面板打开期间数据可能被外部投递改动过：下标失效时明确报错，绝不静默退化成"新增"
+            showToast('该链接已被移动或删除，请刷新面板后重试', 'warn');
+            closeNavLinkModal();
+            return;
+        }
+        const item = {
+            title: title,
+            desc: desc,
+            url: url,
+            icon: navIconPicked                                    // 空串 = 自动匹配，走 favicon 分支
+        };
+
+        if (old && targetGi === ed.gi) {
+            data[ed.gi].links[ed.li] = item;      // 就地更新：只改内容，不动排序位置
+        } else {
+            if (old) data[ed.gi].links.splice(ed.li, 1);
+            data[targetGi].links.push(item);
+        }
+
+        // 写盘失败（配额满/跨标签冲突）时关闭弹窗、内存态已回滚为磁盘内容，绝不弹成功提示
+        if (!persistNav()) { navDraftActive = false; closeNavLinkModal(); renderNavMgr(); renderNav(); return; }
+        // 记住本次分组，下次插件投递默认落到这里
+        safeSet(NAV_LAST_GROUP_KEY, data[targetGi].category || '');
+        navDraftActive = false;   // 保存成功不算取消
+        closeNavLinkModal();
+        renderNavMgr();
+        renderNav();
+        showToast(old ? '已保存修改' : '已添加：' + title, 'success');
     }
 
     // --- 2. 全局配置逻辑 ---
@@ -2019,6 +3098,11 @@
     // （覆盖式，只留最后一份，避免每次刷新都新增键挤占配额），然后清除坏值并返回兜底。
     // expect: 可选类型断言 'array' | 'object'——合法 JSON 但类型不对同样按损坏处理，
     // 否则会被后续写入静默覆盖，造成无备份的数据丢失。
+    // localStorage 被策略/隐私模式禁用时 getItem 会抛——与 safeParse/safeSet 保持同一层保护
+    function safeGetRaw(key) {
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+    }
+
     function safeParse(key, fallback, expect) {
         let raw = null;
         try {
@@ -4517,19 +5601,24 @@
         document.getElementById('newsSummaryModal').classList.remove('show');
     }
 
-    // --- ESC 关闭所有弹窗 (新增) ---
+    // --- ESC 关闭最上层弹窗 ---
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
+            // 只关最上层（DOM 序最后）的弹窗：编辑框叠在管理面板上时按 ESC 不应两层全关。
+            // 有自定义关闭函数的弹窗直接交给它——先摘 class 再调 close 函数会让
+            // closeNavLinkModal 误判"弹窗本来就没开"，跳过取消反馈等状态清理。
             const openModals = document.querySelectorAll('.modal-overlay.show');
-            openModals.forEach(modal => {
-                modal.classList.remove('show');
-                // ESC 关闭也要同步清理内部状态，保持「关闭状态 = 状态已重置」
-                if (modal.id === 'addToDayModal') pendingAddToDay = null;
-                // 如果关闭的是设置弹窗，按需刷新热榜（数据源没变就不动）
-                if (modal.id === 'configModal') {
-                    syncTrendTabsIfChanged();
-                }
-            });
+            const topModal = openModals[openModals.length - 1];
+            if (!topModal) return;
+            if (topModal.id === 'navLinkModal') { closeNavLinkModal(); return; }
+            if (topModal.id === 'navManagerModal') { closeNavManager(); return; }
+            topModal.classList.remove('show');
+            // ESC 关闭也要同步清理内部状态，保持「关闭状态 = 状态已重置」
+            if (topModal.id === 'addToDayModal') pendingAddToDay = null;
+            // 如果关闭的是设置弹窗，按需刷新热榜（数据源没变就不动）
+            if (topModal.id === 'configModal') {
+                syncTrendTabsIfChanged();
+            }
         }
     });
 
@@ -4577,6 +5666,10 @@
     initWeather();
     checkNewsStatus(); // Initialize check
     renderNav(); // 初始化导航页
+    // 外部入口：#add=<base64url> 由插件/手机端投递，清 hash 后处理——
+    // 带 group 参数（程序化投递）按指定分组静默落库；不带 group（插件人工点击）弹预填确认框
+    consumeNavAddHash();
+    window.addEventListener('hashchange', consumeNavAddHash);
 
     setInterval(() => {
         fetchWeather(weatherConfig.adcode, weatherConfig.city);
