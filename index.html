@@ -1120,6 +1120,21 @@
         .lgr-shop-btn:hover:not(:disabled) { background: var(--warning); color: #241a00; }
         .lgr-shop-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .lgr-shop-note { font-size: 10px; color: var(--text-sec); }
+        .lgr-shop-manage { margin: 4px 0 14px; display: flex; flex-direction: column; gap: 8px; }
+        .lgr-shop-mgr-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .lgr-shop-mgr-row input, .lgr-shop-mgr-row select {
+            flex: 1; min-width: 0; background: #1b1b2b; border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px; color: #fff; padding: 7px 10px; font-size: 12px;
+        }
+        .lgr-shop-mgr-row input:focus, .lgr-shop-mgr-row select:focus { border-color: var(--primary); outline: none; }
+        .lgr-shop-mgr-row select option { background: #1b1b2b; color: #fff; }
+        .lgr-shop-mgr-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
+        .lgr-shop-mgr-item {
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            font-size: 12px; color: #ccc; padding: 6px 8px;
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+        }
+        .lgr-shop-mgr-item.editing { border-color: var(--primary); color: #fff; }
 
         /* 通用小提示弹窗（存钱 / 兑换金额） */
         #lgrPromptModal .modal-content { max-width: 340px; text-align: left; padding: 26px; }
@@ -5234,14 +5249,7 @@
         { note: '超市', cat: '购物', account: '支付宝' }
     ];
 
-    // 兑换商店：只兑特权与娱乐额度，不兑现金。
-    // spend 存在 = 这条兑换对应真实消费，兑换时要同时记一笔支出，避免账实不符。
-    const LGR_SHOP = [
-        { id: 'ent1h', emoji: '🎮', name: '1 小时娱乐时间', cost: 30 },
-        { id: 'milktea', emoji: '🧋', name: '一杯奶茶额度', cost: 50, spend: { cat: '餐饮', amount: 15, account: '微信' } },
-        { id: 'sleepin', emoji: '😴', name: '周末睡懒觉特权', cost: 80 },
-        { id: 'wishlist', emoji: '🎁', name: '解锁一个愿望清单购买资格', cost: 100 }
-    ];
+    // 兑换商店：兑换项存放在 lgrData.shop（用户可自定义），默认四项与清洗规则在 core.js。
 
     function clampInt(value, min, max, dft) {
         const n = parseInt(value, 10);
@@ -5331,6 +5339,7 @@
             goals,
             coinTx,
             settings,
+            shop: CyberCore.normalizeShopItems(data.shop),
             rewards: (data.rewards && typeof data.rewards === 'object') ? data.rewards : {},
             redeemed: (data.redeemed && typeof data.redeemed === 'object') ? data.redeemed : {}
         };
@@ -6115,6 +6124,135 @@
     }
 
     // --- 番茄币 ---
+    // --- 兑换项管理：新增 / 编辑 / 删除，数据落在 lgrData.shop ---
+    let shopManageOpen = false;
+    let shopEditingId = null;
+    let shopSeq = 0;
+
+    function shopSpendRowVisible() {
+        const kind = document.getElementById('lgrShopKind');
+        return !!kind && kind.value === 'spend';
+    }
+
+    function onShopKindChange() {
+        const row = document.getElementById('lgrShopSpendRow');
+        if (row) row.style.display = shopSpendRowVisible() ? 'flex' : 'none';
+    }
+
+    function toggleShopManage() {
+        shopManageOpen = !shopManageOpen;
+        cancelShopEdit();
+    }
+
+    function cancelShopEdit() {
+        shopEditingId = null;
+        renderCoinPanel();
+    }
+
+    function editShopItem(id) {
+        const item = lgrData.shop.find(x => x.id === id);
+        if (!item) return;
+        shopManageOpen = true;
+        shopEditingId = id;
+        renderCoinPanel();
+    }
+
+    function deleteShopItem(id) {
+        const item = lgrData.shop.find(x => x.id === id);
+        if (!item) return;
+        openLgrPrompt({
+            mode: 'confirm',
+            title: '删除兑换项',
+            message: `确定删除「${item.name}」？历史兑换记录会保留，但商店不再显示。`,
+            onConfirm: () => {
+                lgrData.shop = lgrData.shop.filter(x => x.id !== id);
+                saveLedger();
+                renderCoinPanel();
+                showToast(`已删除兑换项「${item.name}」`, 'success');
+            }
+        });
+    }
+
+    function saveShopItem() {
+        const get = id => (document.getElementById(id) || {}).value;
+        const name = String(get('lgrShopName') || '').trim();
+        const cost = Math.round(Number(get('lgrShopCost')));
+        if (!name) { showToast('请填写兑换项名称', 'warn'); return; }
+        if (!Number.isFinite(cost) || cost < 1 || cost > 100000) { showToast('价格需为 1–100000 的整数（单位：币）', 'warn'); return; }
+
+        const item = {
+            id: shopEditingId || ('shop' + (++shopSeq) + Date.now().toString(36)),
+            emoji: String(get('lgrShopEmoji') || '').trim().slice(0, 4) || '🎁',
+            name: name.slice(0, 20),
+            cost: cost
+        };
+
+        if (shopSpendRowVisible()) {
+            const amount = Math.round((Number(get('lgrShopAmount')) || 0) * 100) / 100;
+            if (amount <= 0) { showToast('真实消费类兑换需要填写默认金额（实际兑换时可改）', 'warn'); return; }
+            item.spend = {
+                cat: get('lgrShopCat') || '购物',
+                amount: amount,
+                account: get('lgrShopAccount') || '微信'
+            };
+        }
+
+        const wasEditing = !!shopEditingId;
+        if (wasEditing) {
+            const idx = lgrData.shop.findIndex(x => x.id === shopEditingId);
+            if (idx >= 0) lgrData.shop[idx] = item;
+        } else {
+            lgrData.shop.push(item);
+        }
+
+        shopEditingId = null;
+        saveLedger();
+        renderCoinPanel();
+        showToast(`兑换项「${item.name}」已${wasEditing ? '更新' : '添加'}`, 'success');
+    }
+
+    function shopManageToggleBtn() {
+        return `<button class="lgr-mini-btn" onclick="toggleShopManage()">${shopManageOpen ? '完成' : '管理'}</button>`;
+    }
+
+    function shopManagePanel() {
+        const cats = CyberCore.LEDGER_TAXONOMY.expense;
+        const accs = CyberCore.LEDGER_TAXONOMY.accounts;
+        const editing = shopEditingId ? lgrData.shop.find(x => x.id === shopEditingId) : null;
+        const eSpend = editing && editing.spend;
+        return `
+            <div class="lgr-shop-manage">
+                <div class="lgr-shop-mgr-row">
+                    <input id="lgrShopEmoji" maxlength="4" placeholder="🎨" value="${editing ? lgrEsc(editing.emoji) : ''}" style="width:56px;flex:none;">
+                    <input id="lgrShopName" maxlength="20" placeholder="名称（如：一杯奶茶额度）" value="${editing ? lgrEsc(editing.name) : ''}">
+                    <input id="lgrShopCost" type="number" min="1" step="1" placeholder="价格(币)" value="${editing ? editing.cost : ''}" style="width:92px;flex:none;">
+                </div>
+                <div class="lgr-shop-mgr-row">
+                    <select id="lgrShopKind" onchange="onShopKindChange()" style="flex:none;width:170px;">
+                        <option value="priv" ${eSpend ? '' : 'selected'}>特权 · 不动钱</option>
+                        <option value="spend" ${eSpend ? 'selected' : ''}>真实消费 · 同记支出</option>
+                    </select>
+                    <span id="lgrShopSpendRow" style="display:${shopSpendRowVisible() ? 'flex' : 'none'};gap:6px;flex:1;min-width:0;">
+                        <select id="lgrShopCat" style="flex:none;width:104px;">${cats.map(c => `<option ${eSpend && eSpend.cat === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
+                        <input id="lgrShopAmount" type="number" min="0" step="0.01" placeholder="默认金额" value="${eSpend ? eSpend.amount : ''}" style="width:84px;flex:none;">
+                        <select id="lgrShopAccount" style="flex:none;width:104px;">${accs.map(a => `<option ${eSpend && eSpend.account === a ? 'selected' : ''}>${a}</option>`).join('')}</select>
+                    </span>
+                    <button class="lgr-mini-btn" onclick="saveShopItem()">${editing ? '保存修改' : '添加'}</button>
+                    ${editing ? '<button class="lgr-mini-btn" onclick="cancelShopEdit()">取消</button>' : ''}
+                </div>
+                <div class="lgr-shop-mgr-list">
+                    ${lgrData.shop.map(it => `
+                        <div class="lgr-shop-mgr-item ${shopEditingId === it.id ? 'editing' : ''}">
+                            <span>${it.emoji} ${lgrEsc(it.name)} · ${it.cost} 币${it.spend ? `（记 ${it.spend.cat}）` : ''}</span>
+                            <span>
+                                <button class="lgr-mini-btn" onclick="editShopItem('${it.id}')">编辑</button>
+                                <button class="lgr-mini-btn" onclick="deleteShopItem('${it.id}')">删除</button>
+                            </span>
+                        </div>`).join('') || '<div class="lgr-empty">商店空了，添加一个兑换项吧</div>'}
+                </div>
+            </div>`;
+    }
+
     function shopItem(item, coin) {
         const can = coin.balance >= item.cost;
         const times = Number(lgrData.redeemed[item.id]) || 0;
@@ -6184,8 +6322,8 @@
             </div>
 
             <div class="lgr-block">
-                <div class="lgr-block-title">兑换商店 <small>余额 ${coin.balance} 币</small></div>
-                <div class="lgr-shop">${LGR_SHOP.map(item => shopItem(item, coin)).join('')}</div>
+                <div class="lgr-block-title"><span>兑换商店 <small>余额 ${coin.balance} 币</small></span>${shopManageToggleBtn()}</div>
+                ${shopManageOpen ? shopManagePanel() : `<div class="lgr-shop">${lgrData.shop.map(item => shopItem(item, coin)).join('')}</div>`}
             </div>
 
             <div class="lgr-block">
@@ -6196,7 +6334,7 @@
     }
 
     function redeemCoin(itemId) {
-        const item = LGR_SHOP.find(x => x.id === itemId);
+        const item = lgrData.shop.find(x => x.id === itemId);
         if (!item) return;
 
         const coin = lgrCoin();

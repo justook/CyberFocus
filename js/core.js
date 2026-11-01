@@ -734,6 +734,59 @@
         };
     }
 
+    // 兑换商店默认项：只兑特权与娱乐额度，不兑现金。
+    // spend 存在 = 这条兑换对应真实消费，兑换时要同时记一笔支出，避免账实不符。
+    const DEFAULT_SHOP = [
+        { id: 'ent1h', emoji: '🎮', name: '1 小时娱乐时间', cost: 30 },
+        { id: 'milktea', emoji: '🧋', name: '一杯奶茶额度', cost: 50, spend: { cat: '餐饮', amount: 15, account: '微信' } },
+        { id: 'sleepin', emoji: '😴', name: '周末睡懒觉特权', cost: 80 },
+        { id: 'wishlist', emoji: '🎁', name: '解锁一个愿望清单购买资格', cost: 100 }
+    ];
+
+    // 兑换项清洗：用户可自定义（名称 / 图标 / 价格 / 是否真实消费），
+    // 坏数据直接丢弃而不是整商店带崩；undefined/null → 默认四项，空数组 → 保留（允许清空商店）。
+    function normalizeShopItems(raw) {
+        if (!Array.isArray(raw)) return DEFAULT_SHOP.map(it => cloneShopItem(it));
+        const seen = {};
+        const out = [];
+        raw.forEach(it => {
+            if (!it || typeof it !== 'object') return;
+            const name = String(it.name || '').trim().slice(0, 20);
+            const cost = Math.round(Number(it.cost));
+            if (!name || !Number.isFinite(cost) || cost < 1 || cost > 100000) return;
+
+            let id = String(it.id || '').replace(/[^\w-]/g, '').slice(0, 24);
+            if (!id || seen[id]) id = 'shop' + (out.length + 1) + '-' + (seen.__seq = (seen.__seq || 0) + 1);
+            seen[id] = true;
+
+            const item = {
+                id: id,
+                emoji: String(it.emoji || '🎁').slice(0, 4),
+                name: name,
+                cost: cost
+            };
+            if (it.spend && typeof it.spend === 'object') {
+                const amount = Math.round((Number(it.spend.amount) || 0) * 100) / 100;
+                if (amount > 0) {
+                    item.spend = {
+                        cat: LEDGER_EXPENSE_CATS.indexOf(it.spend.cat) >= 0 ? it.spend.cat : '购物',
+                        amount: amount,
+                        account: LEDGER_ACCOUNTS.indexOf(it.spend.account) >= 0 ? it.spend.account : '微信'
+                    };
+                }
+            }
+            out.push(item);
+        });
+        return out;
+    }
+
+    function cloneShopItem(it) {
+        const c = { id: it.id, emoji: it.emoji, name: it.name, cost: it.cost };
+        if (it.spend) c.spend = { cat: it.spend.cat, amount: it.spend.amount, account: it.spend.account };
+        return c;
+    }
+
+
     return {
         calcTaskProgress: calcTaskProgress,
         normalizeTrendUrl: normalizeTrendUrl,
@@ -752,6 +805,8 @@
         calcGoalProgress: calcGoalProgress,
         nextSaveReward: nextSaveReward,
         buildWeeklyReport: buildWeeklyReport,
+        DEFAULT_SHOP: DEFAULT_SHOP,
+        normalizeShopItems: normalizeShopItems,
         weekRange: weekRange,
         daysInMonth: daysInMonth,
         daysLeftInMonth: daysLeftInMonth,

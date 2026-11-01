@@ -567,6 +567,44 @@ test('2026 年 11 月 30 天、2 月闰年 29 天', () => {
     assert.strictEqual(core.daysInMonth('2026-02'), 28);
 });
 
+// --- 兑换项自定义（normalizeShopItems） -----------------------------------
+test('未传入兑换项时返回默认四项，空数组保留（允许清空商店）', () => {
+    assert.strictEqual(core.DEFAULT_SHOP.length, 4);
+    assert.strictEqual(core.normalizeShopItems().length, 4);
+    assert.strictEqual(core.normalizeShopItems(null).length, 4);
+    assert.deepStrictEqual(core.normalizeShopItems([]), []);
+});
+
+test('非法兑换项被丢弃，真实消费项校验分类与账户', () => {
+    const out = core.normalizeShopItems([
+        { name: '', cost: 10 },                 // 无名
+        { name: '零价', cost: 0 },              // 价格非法
+        { name: '天价', cost: 999999 },         // 超上限
+        { name: '咖啡', cost: 6, emoji: '☕', spend: { cat: '餐饮', amount: 12.5, account: '现金' } },
+        { name: '坏分类', cost: 6, spend: { cat: '不存在', amount: 5 } },
+        { name: '负金额', cost: 6, spend: { cat: '餐饮', amount: -3 } },
+        { name: 'x', cost: 3 }
+    ]);
+    // 非法项丢弃；spend 无效的项退化为特权保留
+    assert.strictEqual(out.length, 4);
+    const coffee = out[0];
+    assert.strictEqual(coffee.name, '咖啡');
+    assert.deepStrictEqual(coffee.spend, { cat: '餐饮', amount: 12.5, account: '现金' });
+    // 分类非法但金额合法 → 兜底为「购物」；金额非法 → spend 整个剥掉，退化为特权
+    assert.deepStrictEqual(out[1].spend, { cat: '购物', amount: 5, account: '微信' });
+    assert.strictEqual(out[2].spend, undefined);
+    // 无 id 自动补、重复 id 强制去重
+    assert.ok(out.every(i => i.id));
+    assert.notStrictEqual(out[0].id, out[2].id);
+});
+
+test('兑换项字段被截断收口（名称 20 字、图标 4 字符、价格取整）', () => {
+    const out = core.normalizeShopItems([{ name: '一'.repeat(30), emoji: '🎈🎈🎈🎈🎈', cost: 9.9 }]);
+    assert.strictEqual(out[0].name.length, 20);
+    assert.strictEqual(out[0].emoji.length, 4);
+    assert.strictEqual(out[0].cost, 10);
+});
+
 // --- 汇总 ---------------------------------------------------------------
 const total = passed + failures.length;
 console.log('\n' + '-'.repeat(52));
